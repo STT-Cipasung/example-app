@@ -294,3 +294,127 @@
         });
         ```
 
+## Job Page: Job Card & Link Button Components
+- Halaman Job: Job Card & Link Button Components
+    - Tambahkan style `items-center` pada file `resources/views/job/index.blade.php` menjadi seperti berikut
+
+        ```php
+        <div class="mb-4 flex items-center justify-between text-sm text-slate-500">
+        ```
+    - Ubah `routes/web.php` menjadi seperti berikut
+
+        ```php
+        Route::resource('jobs', JobController::class)->only(['index', 'show']);
+        ```
+    - Buat file `resources/views/job/show.blade.php` dengan command berikut
+
+        ```bash
+        ./vendor/bin/sail artisan make:view job.show
+        ```
+    - Ubah method `show` pada file JobController menjadi seperti berikut
+
+        ```php
+        public function show(Job $job) {
+            return view('job.show', compact('job'));
+        }
+        ```
+    - Tambahkan code berikut sebagai placeholder pada file `resources/views/job/show.blade.php`
+
+        ```php
+        <x-layout>
+            <x-card>
+                Job Details
+            </x-card>
+        </x-layout>
+        ```
+    - Ubah code di `<p class="text-sm text-slate-500">` pada file `resources/views/job/index.blade.php` menjadi seperti berikut
+
+        ```php
+        <p class="text-sm text-slate-500 mb-4">{!! nl2br(e($job->description)) !!}</p>
+
+        <div>
+            <a href="{{ route('jobs.show', $job) }}">
+                See
+            </a>
+        </div>
+        ```
+    - Tambahkan style pada `<a href="{{ route('jobs.show', $job) }}">` pada file `resources/views/job/index.blade.php` menjadi seperti berikut
+
+        ```php
+        <a href="{{ route('jobs.show', $job) }}" 
+            class="rounded-md border border-slate-300 bg-white px-2.5 py-1.5 text-center text-sm font-semibold text-black shadow-sm hover:bg-slate-100">
+            See
+        </a>
+        ```
+    - Extract `<a>` menjadi sebuah component dengan nama `LinkButton` dengan command berikut
+
+        ```bash
+        ./vendor/bin/sail artisan make:component LinkButton --view
+        ```
+    - Pindahkan code `<a>` sebelumnya ke dalam component `LinkButton` pada file `resources/views/components/link-button.blade.php` dan ubah menjadi seperti berikut
+
+        ```php
+        <a href="{{ $href }}"
+            class="rounded-md border border-slate-300 bg-white px-2.5 py-1.5 text-center text-sm font-semibold text-black shadow-sm hover:bg-slate-100">
+            {{ $slot }}
+        </a>
+      ```
+    - Ubah code sebelumnya pada file `resources/views/job/index.blade.php` menjadi seperti berikut
+
+        ```php
+        <x-link-button href="{{ route('jobs.show', $job) }}">
+            See
+        </x-link-button>
+        ```
+    - Buat component baru dengan nama `JobCard` dengan command berikut
+
+        ```bash
+        ./vendor/bin/sail artisan make:component JobCard --view
+        ```
+    - Pindahkan code sebelumnya pada file `resources/views/job/index.blade.php` ke dalam component `JobCard` pada file `resources/views/components/job-card.blade.php` dan ubah menjadi seperti berikut
+
+        ```php
+        <x-card class="mb-4">
+            <div class="mb-4 flex justify-between">
+                <h2 class="text-lg font-medium">
+                    {{ $job->title }}
+                </h2>
+                <div class="text-slate-500">
+                    ${{ number_format($job->salary) }}
+                </div>
+            </div>
+            
+            <div class="mb-4 flex items-center justify-between text-sm text-slate-500">
+                <div class="flex space-x-4">
+                    <div>Company Name</div>
+                    <div>{{ $job->location }}</div>
+                </div>
+                <div class="flex space-x-1 text-xs">
+                    <x-tag>{{ Str::ucfirst($job->experience) }}</x-tag>
+                    <x-tag>{{ $job->category }}</x-tag>
+                </div>
+            </div>
+
+            <p class="text-sm text-slate-500 mb-4">{!! nl2br(e($job->description)) !!}</p>
+            
+            {{ $slot }}
+        </x-card>
+        ```
+    - Ubah code sebelumnya pada file `resources/views/job/index.blade.php` menjadi seperti berikut
+
+        ```php
+        <x-job-card class="mb-4" :job="$job">
+            <div>
+                <x-link-button :href="route('jobs.show', $job)">
+                    Show
+                </x-link-button>
+            </div>
+        </x-job-card>
+        ```
+    - Ubah code pada file `resources/views/job/show.blade.php` menjadi seperti berikut
+
+        ```php
+        <x-layout>
+            <x-job-card :job="$job" />
+        </x-layout>
+        ```
