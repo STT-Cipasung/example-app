@@ -587,3 +587,51 @@
             </div>
         </div>
         ```
+
+## Filtering Jobs: Form & Searching for Text in Job Posts
+- Filtering Jobs: Form & Searching for Text in Job Posts
+    - Refactor code pada file `resources/views/components/job-card.blade.php`, hapus bagian ini
+
+        ```php
+        <p class="text-sm text-slate-500 mb-4">{!! nl2br(e($job->description)) !!}</p>
+        ```
+    - Pindahkan code tersebut ke dalam file `resources/views/job/show.blade.php` dan ubah menjadi seperti berikut
+
+        ```php
+        ...
+        <x-job-card :job="$job">
+            <p class="text-sm text-slate-500 mb-4">{!! nl2br(e($job->description)) !!}</p>
+        </x-job-card>
+        ...
+        ```
+    - Refactor code pada file `resources/views/job/index.blade.php` dengan menambahkan code berikut diantara `breadcrumbs` dan `@foreach`
+
+        ```php
+        ...
+        <x-card class="mb-4 text-sm">
+            <form action="{{ route('jobs.index') }}" method="GET">
+                <div class="mb-4 grid grid-cols-2 gap-4">
+                    <div>
+                        <div class="mb-1 font-semibold">Search</div>
+                        <x-text-input name="search" value="" placeholder="Search for any text"/>
+                ...
+                <button class="w-full">Filter</button>
+            </form>
+        </x-card>
+        ...
+        ```
+    - Refactor code pada `JobController` untuk mendukung fungsi filter
+
+        ```php
+        ...
+        public function index() {
+            $jobs = Job::query();
+            $jobs->when(request('search'), function ($query) {
+            $query->where('title', 'like', '%' . request('search') . '%')
+                ->orWhere('description', 'like', '%' . request('search') . '%');
+            });
+
+            return view('job.index', ['jobs' => $jobs->get()]);
+        }
+        ...
+        ```
