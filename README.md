@@ -1,5 +1,5 @@
 # Laravel
-## Command
+## Setup New Laravel Sail Project or Existing Repository
 
 - Membuat Project Laravel Sail Baru
 
@@ -12,6 +12,26 @@
         ```bash
         curl -s "https://laravel.build/example-app?with=mysql,redis" | bash
         ```
+
+
+### Setup Existing Repository
+- Jika ingin menggunakan repository Laravel Sail
+
+    ```bash
+    git clone <repository-url>
+    ```
+
+- Docker run dengan command berikut
+
+    ```bash
+    docker run --rm \
+        -u "$(id -u):$(id -g)" \
+        -v $(pwd):/opt \
+        -w /opt \
+        laravelsail/php81-composer:latest \
+        composer install --ignore-platform-reqs
+    ```
+
 
 - Running Laravel Sail dari Repository
 
@@ -27,6 +47,8 @@
     ./vendor/bin/sail artisan migrate
     ```
 
+## Job Model, Factory, and Migration
+
 - Membuat Model, Migration, dan Factory
 
     ```bash
@@ -39,6 +61,7 @@
             ./vendor/bin/sail artisan make:model Job -m -f
             ```
 
+## Job Controller and Seeder
 - Membuat Controller
 
     ```bash
@@ -56,12 +79,14 @@
     ./vendor/bin/sail artisan migrate:refresh --seed
     ```
 
+## Laravel Debugbar
 - Install Laravel Debugbar (https://github.com/barryvdh/laravel-debugbar)
 
     ```bash
     ./vendor/bin/sail composer require barryvdh/laravel-debugbar --dev
     ```
 
+## Vite and Tailwind CSS
 - Install Sail npm package
 
     ```bash
@@ -73,12 +98,13 @@
     ```bash
     ./vendor/bin/sail npm run dev
     ```
-  - Jika tidak ingin menjalankan npm dibackground, gunakan perintah berikut (harus dijalankan ulang jika ada perubahan pada file css/js)
+    - Jika tidak ingin menjalankan npm dibackground, gunakan perintah berikut (harus dijalankan ulang jika ada perubahan pada file css/js)
 
-    ```bash
-    ./vendor/bin/sail npm run build
-    ```
+      ```bash
+      ./vendor/bin/sail npm run build
+      ```
 
+## Blade Component and Layout
 - Membuat Layout Component
 
     ```bash
@@ -100,7 +126,7 @@
             <meta charset="utf-8">
             <meta name="viewport" content="width=device-width, initial-scale=1">
             <title>Laravel Job Board</title>
-            @vite(['resource/css/app.css'])
+            @vite(['resources/css/app.css'])
         </head>
         <body>
             {{ $slot }}
@@ -151,4 +177,36 @@
         </x-layout>
         ```
 
+## Jobs Page and Card Component
+- Halaman Job dan Card Component
+    - Tambahkan style pada layout component. Tambahkan style pada `<body>` di file `resources/views/components/layout.blade.php` sehinnga menjadi seperti berikut
+
+        ```php
+        ...
+        <body class="mx-auto mt-10 max-w-2xl bg-slate-200 text-slate-700">
+        ...
+        ```
+    - Buat sebuh component card dengan command berikut
+
+        ```bash
+        ./vendor/bin/sail artisan make:component Card --view
+        ```
+    - Tambahkan code berikut pada file `resources/views/components/card.blade.php`. Referensi https://laravel.com/docs/11.x/blade#default-merged-attributes
+
+        ```php
+        <div {{ $attributes->class(['rounded-md border border-slate-300 bg-white p-4 shadow-sm']) }}>
+            {{ $slot }}
+        </div>
+        ```
+    - Ubah code pada file `resources/views/job/index.blade.php` menjadi seperti berikut
+
+        ```php
+        <x-layout>
+            @foreach ($jobs as $job)
+                <x-card class="mb-4">
+                    {{ $job->title }}
+                </x-card>
+            @endforeach
+        </x-layout>
+        ```
 
