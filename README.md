@@ -210,3 +210,87 @@
         </x-layout>
         ```
 
+## Job Page: Tag Component and Job Info
+- Halaman Job: Tag Component dan Job Info
+    - Ubah code pada file `resources/components/card.blade.php` dari `<div>` menjadi `<article>`. Agar lebih semantic
+
+        ```php
+        <article {{ $attributes->class(['rounded-md border border-slate-300 bg-white p-4 shadow-sm']) }}>
+            {{ $slot }}
+        </article>
+        ```
+    - Ubah code pada file `resources/views/job/index.blade.php` sehinnga menjadi seperti berikut
+
+        ```php
+        <x-layout>
+            @foreach ($jobs as $job)
+                <x-card class="mb-4">
+                    <div class="mb-4 flex justify-between">
+                        <h2 class="text-lg font-medium">
+                            {{ $job->title }}
+                        </h2>
+                        <div class="text-slate-500">
+                            ${{ number_format($job->salary) }}
+                        </div>
+                    </div>
+                    
+                    <p>{{ nl2br($job->description) }}</p>
+                </x-card>
+            @endforeach
+        </x-layout>
+        ```
+    - Sesuaikan format description pada file sebelumnya dan ubah menjadi seperti berikut
+
+        ```php
+        <p class="text-sm text-slate-500">{!! nl2br(e($job->description)) !!}</p>
+        ```
+    - Tambahkan code berikut untuk menampilkan `Company Name`, `Location`, `Experiences`, dan `Category` pada file `resources/views/job/index.blade.php`
+
+        ```php
+        ...
+        <div class="mb-4 flex justify-between text-sm text-slate-500">
+            <div class="flex space-x-4">
+                <div>Company Name</div>
+                <div>{{ $job->location }}</div>
+            </div>
+            <div class="flex space-x-1 text-xs">
+                <div>Experience</div>
+                <div>{{ $job->category }}</div>
+            </div>
+        </div>
+        
+        <p class="text-sm text-slate-500">{!! nl2br(e($job->description)) !!}</p>
+        ...
+        ```
+    - Ubah `<div>Experience</div>` dan `<div>{{ $job->category }}</div>` menjadi seperti berikut
+
+        ```php
+        <div class="rounder-md border px-2 py-1">{{ Str::ucfirst($job->experience) }}</div>
+        <div class="rounder-md border px-2 py-1">{{ $job->category }}</div>
+        ```
+    - Buat sebuah component baru dengan nama `Tag` dengan command berikut
+
+        ```bash
+        ./vendor/bin/sail artisan make:component Tag --view
+        ```
+    - Pindahkan code `<div>` sebelumnya ke dalam component `Tag` pada file `resources/views/components/tag.blade.php`
+
+        ```php
+        <div {{ $attributes->class(['rounded-md border px-2 py-1']) }}>
+            {{ $slot }}
+        </div>
+        ```
+    - Ubah code sebelumnya pada file `resources/views/job/index.blade.php` menjadi seperti berikut
+
+        ```php
+        <x-tag>{{ Str::ucfirst($job->experience) }}</x-tag>
+        <x-tag>{{ $job->category }}</x-tag>
+        ```
+    - Tambahkan code pada file `routes/web.php` untuk handle halaman yang tidak ditemukan
+
+        ```php
+        Route::get('', function (){
+            return to_route('jobs.index');
+        });
+        ```
+
