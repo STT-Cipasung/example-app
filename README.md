@@ -635,3 +635,34 @@
         }
         ...
         ```
+
+## Filtering Jobs: Min & Max Salary
+- Filtering Jobs: Min & Max Salary
+    - Refactor code pada file `resources/views/components/job-card.blade.php`, hapus bagian ini
+
+        ```php
+        <x-text-input name="search" value="{{ request('search') }}" placeholder="Search for any text"/>
+        <x-text-input name="min_salary" value="{{ request('min_salary') }}" placeholder="From"/>
+        <x-text-input name="max_salary" value="{{ request('max_salary') }}" placeholder="To"/>
+        ```
+    - Refactor code pada `JobController` untuk mendukung fungsi filter
+
+        ```php
+        ...
+        public function index() {
+            $jobs = Job::query();
+            $jobs->when(request('search'), function ($query) {
+                $query->where(function ($query) {
+                    $query->where('title', 'like', '%' . request('search') . '%')
+                        ->orWhere('description', 'like', '%' . request('search') . '%');
+                });
+            })->when(request('min_salary'), function ($query) {
+                $query->where('salary', '>=', request('min_salary'));
+            })->when(request('max_salary'), function ($query) {
+                $query->where('salary', '<=', request('max_salary'));
+            });
+
+            return view('job.index', ['jobs' => $jobs->get()]);
+        }
+        ...
+        ```
