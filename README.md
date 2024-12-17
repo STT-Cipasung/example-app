@@ -54,3 +54,9 @@
     ```bash
     ./vendor/bin/sail artisan migrate:refresh --seed
     ```
+
+- Install Laravel Debugbar (https://github.com/barryvdh/laravel-debugbar)
+
+    ```bash
+    ./vendor/bin/sail composer require barryvdh/laravel-debugbar --dev
+    ```
