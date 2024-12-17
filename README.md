@@ -418,3 +418,100 @@
             <x-job-card :job="$job" />
         </x-layout>
         ```
+
+## Breadcrumbs Navigation
+- Breadcrumbs Navigation
+    - Tambahkan code pada file `resources/views/job/show.blade.php` menjadi seperti berikut
+
+        ```php
+        <nav>
+            <ul>
+                <li>
+                    <a href="/">Home</a>
+                </li>
+                <li>→</li>
+                <li>
+                    <a href="{{ route('jobs.index') }}">Jobs</a>
+                </li>
+                <li>→</li>
+                <li>{{ $job->title }}</li>
+            </ul>
+        </nav>
+        ```
+    - Tambahkan style pada file `resources/views/job/show.blade.php` menjadi seperti berikut
+
+        ```php
+        <nav class="mb-4">
+            <ul class="flex space-x-4 text-slate-500">
+        ```
+    - Buat component baru dengan nama `Breadcrumbs` dengan command berikut
+
+        ```bash
+        ./vendor/bin/sail artisan make:component Breadcrumbs
+        ```
+    - Pindahkan code sebelumnya pada file `resources/views/job/show.blade.php` ke dalam component `Breadcrumbs` pada file `resources/views/components/breadcrumbs.blade.php` dan ubah menjadi seperti berikut
+
+        ```php
+        <nav class="mb-4">
+            <ul class="flex space-x-4 text-slate-500">
+                <li>
+                    <a href="/">Home</a>
+                </li>
+                <li>→</li>
+                <li>
+                    <a href="{{ route('jobs.index') }}">Jobs</a>
+                </li>
+                <li>→</li>
+                <li>{{ $job->title }}</li>
+            </ul>
+        </nav>
+        ```
+    - Ubah code sebelumnya pada file `resources/views/job/show.blade.php` menjadi seperti berikut
+
+        ```php
+        <x-layout>
+            <x-breadcrumbs :job="$job" />
+            <x-job-card :job="$job" />
+        </x-layout>
+        ```
+    - Ubah code pada file `resources/views/components/breadcrumbs.blade.php` agar menjadi lebih universal menjadi seperti berikut
+
+        ```php
+        <nav {{ $attributes }}>
+            <ul class="flex space-x-4 text-slate-500">
+            <li>
+                <a href="/">Home</a>
+            </li>
+
+            @foreach($links as $label => $link)
+                <li>→</li>
+                <li>
+                    <a href="{{ $link }}">
+                        {{ $label }}
+                    </a>
+                </li>
+            @endforeach
+            </ul>
+        </nav>
+        ```
+    - Ubah code pada file `resources/views/job/show.blade.php` menjadi seperti berikut
+
+        ```php
+        <x-layout>
+            <x-breadcrumbs class="mb-4" :links="['Jobs' => route('jobs.index'), $job->title => '#']"/>
+            <x-job-card :job="$job"/>
+        </x-layout>
+        ```
+    - Ubah code pada Breadcumbs class pada file `app/View/Components/Breadcrumbs.php` menjadi seperti berikut
+
+        ```php
+        public function __construct(public array $links)
+        ```
+    - Tambahkan breadcrumbs pada halaman `resources/views/job/index.blade.php` dengan code berikut
+
+        ```php
+        <x-layout>
+            <x-breadcrumbs class="mb-4" :links="['Jobs' => '#']"/>
+            ...
+        </x-layout>
+        ```
