@@ -515,3 +515,75 @@
             ...
         </x-layout>
         ```
+
+## Filtering Jobs: Tailwind Form Plugin & Text Inputs
+- Filtering Jobs: Tailwind Form Plugin & Text Inputs
+    - Reference https://tailwindcss.com/docs/plugins#forms
+    - Install Tailwind Form Plugin
+
+        ```bash
+        ./vendor/bin/sail npm install -D @tailwindcss/forms
+        ```
+    - Edit `tailwind.config.js` dan tambahkan plugin `require('@tailwindcss/forms')` pada file tersebut
+
+        ```js
+        module.exports = {
+            ...
+            plugins: [
+                require('@tailwindcss/forms'),
+            ],
+        }
+        ```
+    - Ubah code pada file `resources/views/job/index.blade.php` dengan menambahkan code berikut diantara `breadcrumbs` dan `@foreach`
+
+        ```php
+        <x-card class="mb-4 text-sm">
+            <div class="mb-4 grid grid-cols-2 gap-4">
+                <div>1</div>
+                <div>2</div>
+                <div>3</div>
+                <div>4</div>
+            </div>
+        </x-card>
+        ```
+    - Buat component baru dengan nama `TextInput` dengan command berikut
+
+        ```bash
+        ./vendor/bin/sail artisan make:component TextInput
+        ```
+    - Ubah `TextInput` class pada file `app/View/Components/TextInput.php` menjadi seperti berikut
+
+        ```php
+        public function __construct(
+            public ?string $value = null,
+            public ?string $name = null,
+            public ?string $placeholder = null,
+        )
+        {}
+        ```
+    - Ubah `TextInput` view pada file `resources/views/components/text-input.blade.php` menjadi seperti berikut
+
+        ```php
+        <input type="text" placeholder="{{ $placeholder }}" name="{{ $name }}" value="{{ $value }}" id="{{ $name }}"
+       class="w-full rounded-md border-0 py-1.5 px-2.5 text-sm ring-1 ring-slate-300 placeholder:text-slate-400 focus:ring-2"/>
+        ```
+    - Ubah `<div>1</div>` pada file `resources/view/job/index.blade.php` menjadi sebagai berikut
+
+        ```php
+        <div>
+            <div class="mb-1 font-semibold">Search</div>
+            <x-text-input name="search" value="" placeholder="Search for any text" />
+        </div>
+        ```
+    - Ubah `<div>2</div>` pada file `resources/views/job/index.blade.php` menjadi sebagai berikut
+
+        ```php
+        <div>
+            <div class="mb-1 font-semibold">Salary</div>
+                <div class="flex space-x-2">
+                    <x-text-input name="min_salary" value="" placeholder="From" />
+                    <x-text-input name="max_salary" value="" placeholder="To" />
+                </div>
+            </div>
+        </div>
+        ```
