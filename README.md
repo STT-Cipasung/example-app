@@ -2446,5 +2446,188 @@
         }
         ...
         ```
+
+## Employer: Job List
+- Employer: Job List
+    - Refactor view `resources/views/my_job/index.blade.php` dengan code berikut
+
+        ```php
+        <x-layout>
+            <x-breadcrumbs class="mb-4" :links="['My Jobs' => '#']"/>
+
+            <div class="mb-8 text-right">
+                <x-link-button href="{{ route('my-jobs.create') }}">Add New</x-link-button>
+            </div>
+
+            @forelse($jobs as $job)
+                <x-job-card :job="$job">
+                    <div class="text-xs text-slate-500">
+                        @forelse($job->jobApplications as $application)
+                            <div class="mb-4 flex items-center justify-between">
+                                <div>
+                                    <div>{{ $application->user->name }}</div>
+                                    <div>
+                                        Applied {{ $application->created_at->diffForHumans() }}
+                                    </div>
+                                    <div>
+                                        Download CV
+                                    </div>
+                                </div>
+
+                                <div>${{ number_format($application->expected_salary) }}</div>
+                            </div>
+                        @empty
+                            <div>No applicants found.</div>
+                        @endforelse
+                    </div>
+                </x-job-card>
+            @empty
+                <div class="rounded-md border border-dashed border-slate-300 p-8">
+                    <div class="text-center font-medium">
+                        No jobs found.
+                    </div>
+                    <div class="text-center">
+                        Post your first job <a class="text-indigo-500 hover:underline" href="{{ route('my-jobs.create') }}">here!</a>.
+                    </div>
+                </div>
+            @endforelse
+        </x-layout>
+        ```
+    - Refactor `MyJobController` dengan menambahkan fungsi `index`
+
+        ```php
+        ...
+        public function index()
+        {
+            return view('my_job.index', [
+                'jobs' => auth()->user()->employer
+                    ->jobs()
+                    ->with('employer', 'jobApplications', 'jobApplications.user')
+                    ->latest()
+                    ->get()
+                ]);
+        }
+        ...
+        ```
+    - Refactor view `resources/views/my_job/index.blade.php` dengan code berikut agar dapat di edit
+
+        ```php
+        ...
+        <div class="flex space-x-2">
+            <x-link-button href="{{ route('my-jobs.edit', $job) }}">Edit</x-link-button>
+        </div>
+        ...
+        ```
+    - Buat view `edit` dengan command berikut
+
+        ```bash
+        ./vendor/bin/sail artisan make:view my_job.edit
+        ```
+    - Refactor view `resources/views/my_job/edit.blade.php` dengan code berikut
+
+        ```php
+        <x-layout>
+            <x-breadcrumbs class="mb-4" :links="['My Jobs' => route('my-jobs.index'), 'Edit Job' => '#']"/>
+
+            <x-card class="mb-8">
+                <form action="{{ route('my-jobs.update', $job) }}" method="POST">
+                    @csrf
+                    @method('PUT')
+
+                    <div class="mb-4 grid grid-cols-2 gap-4">
+                        <div>
+                            <x-label for="title" :required="true">Job Title</x-label>
+                            <x-text-input name="title" :value="$job->title"/>
+                        </div>
+                        <div>
+                            <x-label for="location" :required="true">Location</x-label>
+                            <x-text-input name="location" :value="$job->location"/>
+                        </div>
+                        <div class="col-span-2">
+                            <x-label for="salary" :required="true">Salary</x-label>
+                            <x-text-input name="salary" type="number" :value="$job->salary"/>
+                        </div>
+
+                        <div class="col-span-2">
+                            <x-label for="description" :required="true">Description</x-label>
+                            <x-text-input name="description" type="textarea" :value="$job->description"/>
+                        </div>
+
+                        <div>
+                            <x-label for="experience" :required="true">Experience</x-label>
+                            <x-radio-group name="experience" :value="$job->experience" :allOption="false"
+                                   :options="array_combine(array_map('ucfirst', \App\Models\Job::$experience), \App\Models\Job::$experience)"/>
+                        </div>
+
+                        <div>
+                            <x-label for="category" :required="true">Category</x-label>
+                            <x-radio-group name="category" :value="$job->category" :allOption="false" :options="\App\Models\Job::$category"/>
+                        </div>
+
+                        <div class="col-span-2">
+                            <x-button class="w-full">Edit Job</x-button>
+                        </div>
+                    </div>
+                </form>
+            </x-card>
+        </x-layout>
+        ```
+    - Refactor `MyJobController` dengan menambahkan fungsi `edit`
+
+        ```php
+        ...
+        public function edit(Job $myJob)
+        {
+            return view('my_job.edit', ['job' => $myJob]);
+        }
+        ...
+        ```
+    - Buat request baru `JobRequest` dengan command berikut untuk menghandle `edit` dan `store`
+
+        ```bash
+        ./vendor/bin/sail artisan make:request JobRequest
+        ```
+    - Refactor `JobRequest` pada file `app/Http/Requests/JobRequest.php` dengan code berikut
+
+        ```php
+        public function authorize(): bool
+        {
+            return true;
+        }
+        ...
+        public function rules(): array
+        {
+            return [
+                'title' => 'required|string|max:255',
+                'location' => 'required|string|max:255',
+                'salary' => 'required|numeric|min:5000',
+                'description' => 'required|string',
+                'experience' => 'required|in:' . implode(',', Job::$experience),
+                'category' => 'required|in:' . implode(',', Job::$category),
+            ];
+        }
+        ...
+        ```
+    - Refactor `MyJobController` dengan menambahkan fungsi `update` dan mengganti fungsi `store`
+
+        ```php
+        ...
+        public function store(JobRequest $request)
+        {
+            auth()->user()->employer->jobs()->create($request->validated());
+
+            return redirect()->route('my-jobs.index')
+                ->with('success', 'Job created successfully!');
+        }
+        ...
+        public function update(JobRequest $request, Job $myJob)
+        {
+            $myJob->update($request->validated());
+
+            return redirect()->route('my-jobs.index')
+                ->with('success', 'Job updated successfully!');
+        }
+        ...
+        ```
     
       
