@@ -1298,6 +1298,7 @@
         ```
 
 ## Employer: Other Employer Jobs on the Job Page
+
 - Menampilkan Job lain pada halaman Job
     - Refactor code pada file `resources/views/job/show.blade.php` dengan menambahkan code berikut
 
@@ -1330,6 +1331,7 @@
         ```
 
 ## Authentication
+
 - Authentication
     - Buat `AuthController` dengan command berikut
 
@@ -1494,7 +1496,8 @@
         Route::delete('logout', fn() => to_route('auth.destroy'))->name('logout');
         Route::delete('auth', [AuthController::class, 'destroy'])->name('auth.destroy');
         ```
-    - Ubah `views/components/layout.blade.php` dengan mengganti code `{{ auth()->user()->name ?? 'Guest' }}` dengan code berikut
+    - Ubah `views/components/layout.blade.php` dengan mengganti code `{{ auth()->user()->name ?? 'Guest' }}` dengan code
+      berikut
 
         ```php
         ...
@@ -1526,3 +1529,170 @@
         </nav>
         ...
         ```
+
+## Applying for Jobs: Controller, Routing and Application Form
+
+- Applying for Jobs: Controller, Routing and Application Form
+    - Buat model `JobApplication` dengan command berikut
+
+        ```bash
+        ./vendor/bin/sail artisan make:model JobApplication -m -f
+        ```
+    - Refactor code pada file `database/migrations/create_job_applications_table.php` menjadi seperti berikut
+
+        ```php
+        public function up(): void
+        {
+            Schema::create('job_applications', function (Blueprint $table) {
+                $table->id();
+
+                $table->foreignIdFor(User::class)->constrained();
+                $table->foreignIdFor(Job::class)->constrained();
+
+                $table->unsignedInteger('expected_salary');
+
+                $table->timestamps();
+            });
+        }
+        ```
+    - Refactor code factory pada file `database/factories/JobApplicationFactory.php`
+
+        ```php
+        public function definition(): array
+        {
+            return [
+                'expected_salary' => $this->faker->numberBetween(4_000, 170_000),
+            ];
+        }
+        ```
+    - Refactor code pada file `app/Models/JobApplication.php` dengan menambahkan relasi `belongsTo`
+
+        ```php
+        public function job(): BelongsTo {
+            return $this->belongsTo(Job::class);
+        }
+
+        public function user() {
+            return $this->belongsTo(User::class);   
+        }
+        ```
+    - Refactor code pada model `User` dan `Job` untuk mendukung relasi
+
+        ```php
+        ...
+        public function jobApplications(): HasMany
+        {
+            return $this->hasMany(JobApplication::class);
+        }
+        ...
+        ```
+    - Refactor `DatabaseSeeder` dengan menambahkan code berikut
+
+        ```php
+        ...
+        foreach ($users as $user) {
+            $jobs = Job::inRandomOrder()->take(rand(0, 4))->get();
+
+            foreach ($jobs as $job) {
+                JobApplication::factory()->create([
+                    'user_id' => $user->id,
+                    'job_id' => $job->id,
+                ]);
+            }
+        }
+        ...
+        ```
+    - Run seeder
+
+        ```bash
+        ./vendor/bin/sail artisan migrate:refresh --seed
+        ```
+    - Buat controller `JobApplicationController` dengan command berikut
+
+        ```bash
+        ./vendor/bin/sail artisan make:controller JobApplicationController --resource
+        ```
+    - Refactor `routes/web.php` dengan menambahkan route
+
+        ```php
+        Route::middleware('auth')->group(function () {
+            Route::resource('jobs.applications', JobApplicationController::class)->only(['create', 'store']);
+        });
+        ```
+    - Buat view `resources/views/job_application/create.blade.php` dengan command berikut
+
+        ```bash
+        ./vendor/bin/sail artisan make:view job_application.create
+        ```
+    - Refactor code pada file `resources/views/job_application/create.blade.php` dengan code berikut
+
+        ```php
+        <x-layout>
+            <x-breadcrumbs class="mb-4" :links="['Jobs' => route('jobs.index'), $job->title => route('jobs.show', $job), 'Apply' => '#']"/>
+
+            <x-job-card :job="$job"/>
+            
+            <x-card>
+                <h2 class="mb-4 text-lg font-medium">
+                    Your Job Application
+                </h2>
+
+                <form action="{{ route('jobs.applications.store', $job) }}" method="POST">
+                    @csrf
+                    <div class="mb-4">
+                        <label for="expected_salary" class="mb-2 block text-sm font-medium text-slate-900">Expected Salary</label>
+                        <x-text-input type="number" name="expected_salary" />
+                    </div>
+
+                    <x-button class="w-full">Apply</x-button>
+                </form>
+            </x-card>
+        </x-layout>
+        ```
+    - Refactor code pada file `app/Http/Controllers/JobApplicationController.php` dengan menambahkan fungsi `create`
+
+        ```php
+        ...
+        public function create(Job $job)
+        {
+            return view('job_application.create', ['job' => $job]);
+        }
+        ...
+        ```
+    - Refactor code pada `JobApplication` model dengan menambahkan code berikut
+
+        ```php
+        ...
+        protected $fillable = ['expected_salary', 'user_id', 'job_id'];
+        ...
+        ```
+    - Refactor code pada file `app/Http/Controllers/JobApplicationController.php` dengan menambahkan fungsi `store`
+
+        ```php
+        ...
+        public function store(Job $job, Request $request)
+        {
+            $job->jobApplications()->create([
+                'user_id' => $request->user()->id,
+                ...$request->validate([
+                    'expected_salary' => 'required|min:1|max:1000000',
+                ]),
+            ]);
+
+            return redirect()->route('jobs.show', $job)->with('success', 'Job application submitted successfully!');
+        }
+        ...
+        ```
+    - Refactor code `resources/views/components/layout.blade.php` untuk menambahkan `flash` message
+
+        ```php
+        ...
+        @if(session('success'))
+            <div role="alert" class="my-8 rounded-md border-l-4 border-green-300 bg-green-100 p-4 text-green-700 opacity-75">
+                <p class="font-bold">Success!</p>
+                <p>{{ session('success') }}</p>
+            </div>
+        @endif
+        ...
+        ```
+    
