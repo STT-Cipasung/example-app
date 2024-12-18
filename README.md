@@ -1918,3 +1918,115 @@
         }
         ...
         ```
+
+## File Uploads
+- File Uploads: Uploading Files
+    - Run command berikut untuk symlink storage
+
+        ```bash
+        ./vendor/bin/sail artisan storage:link
+        ```
+    - Buka file `config/filesystems.php` dan tambahkan code berikut
+
+        ```php
+        ...
+        'disks' => [
+            ...
+            'private' => [
+                'driver' => 'local',
+                'root' => storage_path('app/private'),
+                'visibility' => 'private',
+            ],
+            ...
+        ],
+        ...
+        ```
+    - Buat migration untuk mendukung penyimpanan CV Path pada table dengan command berikut
+
+        ```bash
+        ./vendor/bin/sail artisan make:migration AddCvToJobApplicationsTable
+        ```
+    - Refactor code pada file `database/migrations/add_cv_to_job_applications_table.php` dengan code berikut
+
+        ```php
+        ...
+        public function up(): void
+        {
+            Schema::table('job_applications', function (Blueprint $table) {
+                $table->string('cv_path')->nullable();
+            });
+        }
+
+        public function down(): void
+        {
+            Schema::table('job_applications', function (Blueprint $table) {
+                $table->dropColumn('cv_path');
+            });
+        }
+        ...
+        ```
+    - Run migration
+
+        ```bash
+        ./vendor/bin/sail artisan migrate
+        ```
+    - Refactor `JobApplication` class pada file `app/Models/JobApplication.php` dengan menambahkan code berikut
+
+        ```php
+        ...
+        protected $fillable = ['expected_salary', 'user_id', 'job_id', 'cv_path'];
+        ...
+        ```
+    - Refactor `JobApplicationController` dengan merubah fungsi `store`
+
+        ```php
+        ...
+        public function store(Job $job, Request $request)
+        {
+            $this->authorize('apply', $job);
+
+            $validatedData = $request->validate([
+                'expected_salary' => 'required|min:1|max:1000000',
+                'cv' => 'required|file|mimes:pdf|max:2048',
+            ]);
+
+            $file = $request->file('cv');
+            $path = $file->store('cvs', 'private');
+
+            $job->jobApplications()->create([
+                'user_id' => $request->user()->id,
+                'expected_salary' => $validatedData['expected_salary'],
+                'cv_path' => $path,
+            ]);
+
+            return redirect()->route('jobs.show', $job)->with('success', 'Job application submitted successfully!');
+        }
+        ...
+        ```
+    - Refactor code pada file `resources/views/job_application/create.blade.php` dengan menambahkan code berikut
+
+        ```php
+        ...
+        <x-card>
+            <h2 class="mb-4 text-lg font-medium">
+                Your Job Application
+            </h2>
+
+            <form action="{{ route('jobs.applications.store', $job) }}" method="POST"
+                enctype="multipart/form-data">
+                @csrf
+                <div class="mb-4">
+                    <label for="expected_salary" class="mb-2 block text-sm font-medium text-slate-900">Expected Salary</label>
+                    <x-text-input type="number" name="expected_salary"/>
+                </div>
+
+                <div class="mb-4">
+                    <label for="cv" class="mb-2 block text-sm font-medium text-slate-900">Upload CV</label>
+                    <x-text-input type="file" name="cv"></x-text-input>
+                </div>
+
+                <x-button class="w-full">Apply</x-button>
+            </form>
+        </x-card>
+        ...
+        ```
