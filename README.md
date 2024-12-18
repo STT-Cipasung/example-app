@@ -1695,4 +1695,91 @@
         @endif
         ...
         ```
+
+## Applying for Jobs: The Job Policy
+
+- Laravel Policy
+    - Refactor code pada file `resources/views/job/show.blade.php` dengan menambahkan code berikut di dalam block
+      `<x-job-card :job="$job">`
+
+        ```php
+        ...
+        <x-link-button :href="route('jobs.applications.create', $job)">Apply</x-link-button>
+        ...
+        ```
+    - Refactor `Controller` class pada file `app/Http/Controllers/Controller.php` menjadi code berikut
+
+        ```php
+        ...
+        <?php
+
+        namespace App\Http\Controllers;
+
+        use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+
+        abstract class Controller
+        {
+            use AuthorizesRequests;
+        }
+
+        ...
+        ```
+    - Buat policy `JobPolicy` dengan command berikut (https://laravel.com/docs/11.x/authorization#policy-methods)
+
+        ```bash
+        ./vendor/bin/sail artisan make:policy JobPolicy --model=Job
+        ```
+    - Refactor code pada file `app/Policies/JobPolicy.php` dengan menambahkan fungsi `apply`
+
+        ```php
+        ...
+        public function viewAny(?User $user): bool
+        {
+            return true;
+        }
+        ...
+        public function view(User $user, Job $job): bool
+        {
+            return true;
+        }
+        ...
+        public function apply(User $user, Job $job): bool
+        {
+            return !$job->hasUserApplied($user);
+        }
+        ...
+        ```
+    - Refactor code pada `JobApplicationController` dengan merubah fungsi `create` dan `store`
+
+        ```php
+        ...
+        $this->authorize('apply', $job);
+        ...
+        ```
+    - Refactor model `Job` dengan menambahkan fungsi `hasUserApplied`
+
+        ```php
+        ...
+        public function hasUserApplied(Authenticatable|User|int $user): bool
+        {
+            return $this->where('id', $this->id)
+                ->whereHas('jobApplications', function ($query) use ($user) {
+                    $query->where('user_id', '=', $user->id ?? $user);
+                })->exists();
+        }
+        ...
+        ```
+    - Refactor code pada file `resources/views/job/show.blade.php` dengan menambahkan code berikut
+
+        ```php
+        ...
+        @can('apply', $job)
+            <x-link-button :href="route('jobs.applications.create', $job)">Apply</x-link-button>
+        @else
+            <div class="text-center text-sm font-medium text-slate-500">
+                You have already applied to this job.
+            </div>
+        @endcan
+        ...
+        ```
     
