@@ -916,3 +916,68 @@
         <button type="button" class="absolute top-0 right-0 flex h-full items-center pr-2"
                 onclick="document.getElementById('{{ $name }}').value= ''; document.getElementById('{{ $formId }}').submit()">
         ```
+
+## Refactor: Gradient Background, STyling Buttons, Adding Alpine.js
+- Refactor: Gradient Background, STyling Buttons, Adding Alpine.js
+    - Refactor code pada file `resources/views/components/layout.blade.php` dengan menambahkan style gradient background
+
+        ```php
+        <body class="mx-auto mt-10 max-w-2xl bg-gradient-to-r from-indigo-500 from-10% via-sky-500 via-30% to-emerald-500 to-90% text-slate-700">
+        ```
+    - Refactor code pada file `resources/views/components/job-card.blade.php` dengan mengubah `<x-tag>{{ Str::ucfirst($job->experience) }}</x-tag>` menjadi sebagai berikut
+
+        ```php
+        <x-tag>
+            <a href="{{ route('jobs.index', ['experience' => $job->experience]) }}">
+                {{ Str::ucfirst($job->experience) }}
+            </a>
+        </x-tag>
+        ```
+    - Refactor code pada file `resources/views/components/job-card.blade.php` dengan mengubah `<x-tag>{{ $job->category }}</x-tag>` menjadi sebagai berikut
+
+        ```php
+        <x-tag>
+            <a href="{{ route('jobs.index', ['category' => $job->category]) }}">
+                {{ $job->category }}
+            </a>
+        </x-tag>
+        ```
+    - Buat sebuah component baru dengan nama `Button` dengan command berikut
+
+        ```bash
+        ./vendor/bin/sail artisan make:component Button --view
+        ```
+    - Refactor code pada component baru yang telah dibuat pada file `resources/views/components/button.blade.php` dengan code berikut
+
+        ```php
+        <button {{ $attributes->class(['rounded-md border border-slate-300 bg-white px-2.5 py-1.5 text-center text-sm font-semibold text-black shadow-sm hover:bg-slate-100']) }}>
+            {{ $slot }}
+        </button>
+        ```
+    - Refactor code pada file `resources/views/job/index.blade.php` dengan menambahkan button pada form
+
+        ```php
+        <x-button class="w-full">Filter</x-button>
+        ```
+    - Install Alpine.js https://alpinejs.dev/
+
+        ```bash
+        ./vendor/bin/sail npm install alpinejs
+        ```
+    - Refactor code pada file `resources/views/components/layout.blade.php` dengan menambahkan script Alpine.js
+
+        ```php
+        @vite(['resources/css/app.css', 'resources/js/app.js'])
+        ```
+    - Refactor code pada file `resources/js/bootstrap.js` dengan menambahkan script Alpine.js
+
+        ```js
+        import axios from 'axios';
+        import Alpine from 'alpinejs'
+
+        window.axios = axios;
+        window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
+
+        window.Alpine = Alpine
+        Alpine.start()
+        ```
