@@ -839,3 +839,80 @@
         <x-radio-group name="experience"
             :options="array_combine(array_map('ucfirst', \App\Models\Job::$experience), \App\Models\Job::$experience)"/>
         ```
+
+## Filtering Jobs: Clearing the Input
+- Clearing the Input
+    - Heroicons (https://heroicons.com/)
+    - Refactor code pada file `resources/views/components/text-input.blade.php` dengan menambahkan code berikut
+
+        ```php
+        <input type="text" placeholder="{{ $placeholder }}" name="{{ $name }}" value="{{ $value }}" id="{{ $name }}"
+            class="w-full rounded-md border-0 py-1.5 px-2.5 text-sm ring-1 ring-slate-300 placeholder:text-slate-400 focus:ring-2"/>
+        ```
+    - Refactor code pada file `resources/views/job/index.blade.php` dengan menambahkan code berikut
+
+        ```php
+        <div class="relative">
+            <button class="absolute top-0 right-0 flex h-full items-center pr-2">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+                    class="h-4 w-4 text-slate-500">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/>
+                </svg>
+            </button>
+            <input type="text" placeholder="{{ $placeholder }}" name="{{ $name }}" value="{{ $value }}" id="{{ $name }}"
+                class="w-full rounded-md border-0 py-1.5 px-2.5 pr-8 text-sm ring-1 ring-slate-300 placeholder:text-slate-400 focus:ring-2"/>
+        </div>
+        ```
+    - Tambahkan logic untuk button pada file `resources/views/components/text-input.blade.php` dengan menambahkan code berikut pada inline `<button class="absolute top-0 right-0 flex h-full items-center pr-2">`
+
+        ```php
+        <button type="button" class="absolute top-0 right-0 flex h-full items-center pr-2"
+            onclick="document.getElementById('{{ $name }}').value= ''">
+        ```
+    - Refactor class `TextInput` pada file `app/View/Components/TextInput.php` dengan menambahkan attribute baru
+
+        ```php
+        public function __construct(
+            public ?string $value = null,
+            public ?string $name = null,
+            public ?string $placeholder = null,
+            public ?string $formId = null,
+        )
+        {}
+        ```
+    - Refactor code pada file `resources/views/components/text-input.blade.php` menjadi seperti berikut
+
+        ```php
+        @if($formId)
+            <button type="button" class="absolute top-0 right-0 flex h-full items-center pr-2"
+                    onclick="document.getElementById('{{ $name }}').value= ''">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                    stroke="currentColor"
+                    class="h-4 w-4 text-slate-500">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        @endif
+        ```
+    - Refactor code pada file `resources/views/job/index.blade.php` dengan `id` pada `<form action="{{ route('jobs.index') }}" method="GET">`
+
+        ```php
+        <form id="filtering-form" action="{{ route('jobs.index') }}" method="GET">
+        ```
+    - Refactor code pada file `resources/views/job/index.blade.php` dengan menambahkan `form-id` pada `<x-text-input name="search" value="{{ request('search') }}" placeholder="Search for any text"/>`
+
+        ```php
+        <x-text-input name="search" value="{{ request('search') }}" placeholder="Search for any text" form-id="filtering-form"/>
+        ```
+    - Refactor code pada file `resources/views/job/index.blade.php` pada `<x-text-input>` lainnya dengan menambahkan `form-id` pada masing-masing
+
+        ```php
+        <x-text-input name="min_salary" value="{{ request('min_salary') }}" placeholder="From" form-id="filtering-form"/>
+        <x-text-input name="max_salary" value="{{ request('max_salary') }}" placeholder="To" form-id="filtering-form"/>
+        ```
+    - Refactor code pada file `resources/views/components/text-input.blade.php` dengan menambahkan logic submit form pada button
+
+        ```php
+        <button type="button" class="absolute top-0 right-0 flex h-full items-center pr-2"
+                onclick="document.getElementById('{{ $name }}').value= ''; document.getElementById('{{ $formId }}').submit()">
+        ```
