@@ -1242,4 +1242,90 @@
         ```bash
         ./vendor/bin/sail artisan migrate:refresh --seed
         ```
+
+## Employer: Searching By Employer Name
+
+- Employer: Searching By Employer Name
+    - Refactor code `JobController` untuk mendukung fungsi filter
+
+        ```php
+        ...
+        public function index()
+        {
+            $filters = request()->only(['search', 'min_salary', 'max_salary', 'experience', 'category']);
+
+            return view('job.index', ['jobs' => Job::with('employer')->filter($filters)->get()]);
+        }
+        ...
+        public function show(Job $job)
+        {
+            return view('job.show', ['job' => $job->load('employer')]);
+        }
+        ...
+        ```
+    - Refactor code `resources/views/components/job-card.blade.php` untuk mendukung `employer`
+
+        ```php
+        ...
+        <div>{{ $job->employer->company_name }}</div>
+        ...
+        ```
+    - Refactor code pada file `app/Models/Job.php` dengan menambahkan local query scope
+
+        ```php
+        ...
+        public function scopeFilter(Builder|QueryBuilder $query, array $filters)
+        {
+            return $query->when($filters['search'] ?? null, function ($query, $search) {
+                $query->where(function ($query) use ($search) {
+                    $query->where('title', 'like', '%' . $search . '%')
+                        ->orWhere('description', 'like', '%' . $search . '%')
+                        ->orWhereHas('employer', function ($query) use ($search) {
+                            $query->where('company_name', 'like', '%' . $search . '%');
+                        });
+                });
+            })->when($filters['min_salary'] ?? null, function ($query, $minSalary) {
+                $query->where('salary', '>=', $minSalary);
+            })->when($filters['max_salary'] ?? null, function ($query, $maxSalary) {
+                $query->where('salary', '<=', $maxSalary);
+            })->when($filters['experience'] ?? null, function ($query, $experience) {
+                $query->where('experience', $experience);
+            })->when($filters['category'] ?? null, function ($query, $category) {
+                $query->where('category', $category);
+            });
+        }
+        ...
+        ```
+
+## Employer: Other Employer Jobs on the Job Page
+- Menampilkan Job lain pada halaman Job
+    - Refactor code pada file `resources/views/job/show.blade.php` dengan menambahkan code berikut
+
+        ```php
+        ...
+        <x-card class="mb-4">
+            <h2 class="mb-4 text-lg font-medium">
+                More {{ $job->employer->company_name }} Jobs
+            </h2>
+
+            <div class="text-sm">
+                @foreach($job->employer->jobs as $otherJob)
+                    <div class="flex mb-4 justify-between">
+                        <div>
+                            <div class="text-slate-700">
+                                <a href="{{ route('jobs.show', $otherJob) }}">{{ $otherJob->title }}</a>
+                            </div>
+                            <div class="text-xs">
+                                {{ $otherJob->created_at->diffForHumans() }}
+                            </div>
+                        </div>
+                        <div class="text-xs">
+                            ${{ number_format($otherJob->salary) }}
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        </x-card>
+        ...
+        ```
       
