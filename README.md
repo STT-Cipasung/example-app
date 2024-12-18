@@ -2790,5 +2790,62 @@
             use HasFactory, SoftDeletes;
         ...
         ```
+
+## Employer: Show Deleted Jobs
+- Employer: Show Deleted Jobs
+    - Refactor `MyJobController` dengan menambahkan fungsi `trashed`
+
+        ```php
+        ...
+        public function index()
+        {
+            $this->authorize('viewAnyEmployer', Job::class);
+
+            return view('my_job.index', [
+                'jobs' => auth()->user()->employer
+                    ->jobs()
+                    ->with('employer', 'jobApplications', 'jobApplications.user')
+                    ->withTrashed()
+                    ->latest()
+                    ->get()
+            ]);
+        }
+        ...
+        ```
+    - Refactor `MyApplicationController` dengan menambahkan fungsi `trashed`
+
+        ```php
+        ...
+        public function index()
+        {
+            return view(
+                'my_applications.index',
+                [
+                    'applications' => auth()->user()->jobApplications()
+                        ->with([
+                            'job' => function($query) {
+                                return $query->withCount('jobApplications')->withAvg                            ('jobApplications', 'expected_salary')->withTrashed();
+                            },
+                            'job.employer'
+                        ])
+                    ->latest()->get(),
+                ],
+            );
+        }
+        ...
+        ```
+    - Refactor view `resources/views/components/job-card.blade.php` dengan menambahkan code berikut, agar dapat membedakan job yang sudah dihapus
+
+        ```php
+        ...
+        <div class="flex space-x-4 items-center">
+            <div>{{ $job->employer->company_name }}</div>
+            <div>{{ $job->location }}</div>
+            @if($job->trashed())
+                <span class="text-xs text-red-500">Deleted</span>
+            @endif
+        </div>
+        ...
+        ```
     
       

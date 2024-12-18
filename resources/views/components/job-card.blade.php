@@ -9,9 +9,12 @@
     </div>
 
     <div class="mb-4 flex items-center justify-between text-sm text-slate-500">
-        <div class="flex space-x-4">
+        <div class="flex space-x-4 items-center">
             <div>{{ $job->employer->company_name }}</div>
             <div>{{ $job->location }}</div>
+            @if($job->trashed())
+                <span class="text-xs text-red-500">Deleted</span>
+            @endif
         </div>
         <div class="flex space-x-1 text-xs">
             <x-tag>
