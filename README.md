@@ -1784,6 +1784,7 @@
         ```
 
 ## My Applications: Controller and View
+
 - My Applications: Controller and View
     - Buat controller `MyApplicationController` dengan command berikut
 
@@ -1850,6 +1851,7 @@
         ```
 
 ## My Applications: Additional Info
+
 - My Applications: Additional Info
     - Refactor `MyApplicationController` untuk menghitung jumlah `applicant` dan rata-rata `expected_salary`
 
@@ -1870,7 +1872,8 @@
         }
         ...
         ```
-    - Refactor code pada file `resources/views/my_applications/index.blade.php` dengan menambahkan code berikut pada block `<x-job-card :job="$application->job">`
+    - Refactor code pada file `resources/views/my_applications/index.blade.php` dengan menambahkan code berikut pada
+      block `<x-job-card :job="$application->job">`
 
         ```php
         ...
@@ -1893,7 +1896,8 @@
             </div>
         ...
         ```
-    - Tambahkan button untuk membatalkan aplikasi pada file `resources/views/my_applications/index.blade.php` dengan mengganti block `<div>Right</div>` dengan code berikut
+    - Tambahkan button untuk membatalkan aplikasi pada file `resources/views/my_applications/index.blade.php` dengan
+      mengganti block `<div>Right</div>` dengan code berikut
 
         ```php
         ...
@@ -1920,6 +1924,7 @@
         ```
 
 ## File Uploads
+
 - File Uploads: Uploading Files
     - Run command berikut untuk symlink storage
 
@@ -2030,3 +2035,99 @@
         </x-card>
         ...
         ```
+
+## Refactor: Display Input Errors
+
+- Refactor Flash Message for Error
+    - Refactor component `resources/views/components/text-input.blade.php` dengan code berikut
+        ```php
+        <div class="relative">
+            @if('textarea' !== $type)
+                @if($formRef)
+                    <button type="button" class="absolute top-0 right-0 flex h-full items-center pr-2" @click="$refs['input-{{ $name }}'].value = ''; $refs['{{ $formRef }}'].submit()">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-4 w-4 text-slate-500">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                @endif
+                <input x-ref="input-{{ $name }}" placeholder="{{ $placeholder }}" name="{{ $name }}" value="{{ old($name, $value) }}" id="{{ $name }}" type="{{ $type }}" 
+                @class([
+                    'w-full rounded-md border-0 py-1.5 px-2.5 text-sm ring-1 placeholder:text-slate-400 focus:ring-2',
+                    'pr-8' => $formRef,
+                    'ring-slate-300' => !$errors->has($name),
+                    'ring-red-300' => $errors->has($name),
+                    ])/>
+            @else
+                <textarea x-ref="input-{{ $name }}" id="{{ $name }}" name="{{ $name }}"
+                @class([
+                    'w-full rounded-md border-0 py-1.5 px-2.5 text-sm ring-1 placeholder:text-slate-400 focus:ring-2',
+                    'pr-8' => $formRef,
+                    'ring-slate-300' => !$errors->has($name),
+                    'ring-red-300' => $errors->has($name),
+                    ])>{{ old($name, $value) }}</textarea>
+            @endif
+
+            @error($name)
+                <div class="mt-1 tx-xs text-red-500">
+                    {{ $message }}
+                </div>
+            @enderror
+        </div>
+        ```
+    - Buat component baru dengan nama `Label` menggunakan command berikut
+
+        ```bash
+        ./vendor/bin/sail artisan make:component Label
+        ```
+    - Refactor component `Label` class pada file `app/View/Components/Label.php` dengan code berikut
+
+        ```php
+        public function __construct(
+            public ?string $for = '',
+            public ?bool $required = false,
+        )
+        ```
+    - Refactor component view `label` pada file `resources/views/components/label.blade.php` dengan code berikut
+
+        ```php
+        <label class="mb-2 block text-sm font-medium text-slate-900" for="{{ $for }}">
+            {{ $slot }} @if($required)
+                <span>*</span>
+            @endif
+        </label>
+        ```
+    - Refactor component `resources/views/job_application/create.blade.php` dengan mengganti `<label>` dengan
+      `<x-label>`
+
+        ```php
+        ...
+        <x-label for="expected_salary" :required="true">Expected Salary</x-label>
+        ...
+        <x-label for="cv" :required="true">Upload CV</x-label>
+        ...
+        ```
+    - Refactor component `<label>` lainnya pada file `resources/views/auth/create.blade.php` dengan `<x-label>`
+
+        ```php
+        ...
+        <x-label for="email" :required="true">E-mail</x-label>
+        ...
+        <x-label for="password" :required="true">Password</x-label>
+        ...
+        ```
+    - Refactor untuk menambahkan error message pada file `resources/views/components/layout.blade.php` dengan
+      menambahkan code berikut
+
+        ```php
+        ...
+        @if(session('error'))
+            <div role="alert" class="my-8 rounded-md border-l-4 border-red-300 bg-red-100 p-4 text-red-700 opacity-75">
+                <p class="font-bold">Error!</p>
+                <p>{{ session('error') }}</p>
+            </div>
+        @endif
+        ...
+        ```
+      
+
+      
