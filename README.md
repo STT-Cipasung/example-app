@@ -1848,3 +1848,73 @@
         }
         ...
         ```
+
+## My Applications: Additional Info
+- My Applications: Additional Info
+    - Refactor `MyApplicationController` untuk menghitung jumlah `applicant` dan rata-rata `expected_salary`
+
+        ```php
+        ...
+        public function index()
+        {
+            $applications = auth()->user()->jobApplications()
+                ->with('job', 'job.employer')
+                ->latest()->get();
+
+            $averageSalary = $applications->average('expected_salary');
+
+            return view(
+                'my_applications.index',
+                compact('applications', 'averageSalary'),
+            );
+        }
+        ...
+        ```
+    - Refactor code pada file `resources/views/my_applications/index.blade.php` dengan menambahkan code berikut pada block `<x-job-card :job="$application->job">`
+
+        ```php
+        ...
+        <div class="flex items-center justify-between text-xs text-slate-500">
+                <div>
+                    <div>
+                        Applied on {{ $application->created_at->diffForHumans() }}
+                    </div>
+                    <div>
+                        Other {{ Str::plural('applicant', $application->job->job_applications_count - 1) }} {{ $application->job->job_applications_count - 1 }}
+                    </div>
+                    <div>
+                        Your asking salary ${{ number_format($application->expected_salary) }}
+                    </div>
+                    <div>
+                        Average asking salary ${{ number_format($application->job->job_applications_avg_expected_salary) }}
+                    </div>
+                </div>
+                <div>Right</div>
+            </div>
+        ...
+        ```
+    - Tambahkan button untuk membatalkan aplikasi pada file `resources/views/my_applications/index.blade.php` dengan mengganti block `<div>Right</div>` dengan code berikut
+
+        ```php
+        ...
+        <div>
+            <form action="{{ route('my-applications.destroy', $application) }}" method="POST">
+                @csrf
+                @method('DELETE')
+                <x-button>Cancel</x-button>
+            </form>
+        </div>
+        ...
+        ```
+    - Refactor `MyApplicationController` dengan menambahkan fungsi `destroy`
+
+        ```php
+        ...
+        public function destroy(JobApplication $myApplication)
+        {
+            $myApplication->delete();
+
+            return redirect()->back()->with('success', 'Application removed successfully.');
+        }
+        ...
+        ```
