@@ -1782,4 +1782,69 @@
         @endcan
         ...
         ```
-    
+
+## My Applications: Controller and View
+- My Applications: Controller and View
+    - Buat controller `MyApplicationController` dengan command berikut
+
+        ```bash
+        ./vendor/bin/sail artisan make:controller MyApplicationController --resource
+        ```
+    - Tambahkan route pada file `routes/web.php`
+
+        ```php
+        Route::middleware('auth')->group(function () {
+            Route::resource('jobs.applications', JobApplicationController::class)->only(['create', 'store']);
+
+            Route::resource('my-applications', MyApplicationController::class)->only(['index', 'show', 'destroy']);
+        });
+        ```
+    - Tambahkan link untuk masuk ke halaman `My Applications` pada file `resources/views/components/layout.blade.php`
+
+        ```php
+        ...
+        <a href="{{ route('my-applications.index') }}">
+            {{ auth()->user()->name  ?? 'Anonymous' }} : Applications
+        </a>
+        ...
+        ```
+    - Buat view baru `resources/views/my_applications/index.blade.php` dengan command berikut
+
+        ```bash
+        ./vendor/bin/sail artisan make:view my_applications.index
+        ```
+    - Refactor code pada file `resources/views/my_applications/index.blade.php` dengan code berikut
+
+        ```php
+        <x-layout>
+            <x-breadcrumbs class="mb-4" :links="['My Job Applications' => '#']"/>
+
+                @forelse($applications as $application)
+                    <x-job-card :job="$application->job"></x-job-card>
+                @empty
+                    <div class="rounded-md border border-dashed border-slate-300 p-8">
+                        <div class="text-center font-medium">No job applications yet</div>
+                        <div class="text-center">
+                            Go find some jobs <a class="text-indigo-500 hover:underline" href="{{ route('jobs.index') }}">here!</a>
+                        </div>
+                    </div>
+                @endforelse
+        </x-layout>
+        ```
+    - Refactor `MyApplicationController` dengan menambahkan fungsi `index`
+
+        ```php
+        ...
+        public function index()
+        {
+            return view(
+                'my_applications.index',
+                [
+                    'applications' => auth()->user()->jobApplications()
+                        ->with('job', 'job.employer')
+                        ->latest()->get(),
+                ],
+            );
+        }
+        ...
+        ```
