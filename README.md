@@ -1328,4 +1328,201 @@
         </x-card>
         ...
         ```
+
+## Authentication
+- Authentication
+    - Buat `AuthController` dengan command berikut
+
+        ```bash
+        ./vendor/bin/sail artisan make:controller AuthController --resource
+        ```
+    - Buat view `auth/create.blade.php` dengan command berikut
+
+        ```bash
+        ./vendor/bin/sail artisan make:view auth.create
+        ```
+    - Ubah `AuthController` dengan menambahkan fungsi `create`
+
+        ```php
+        ...
+        public function create()
+        {
+            return view('auth.create');
+        }
+        ...
+        ```
+    - Ubah `routes/web.php` dengan menambahkan route
+
+        ```php
+        Route::get('login', fn() => to_route('auth.create'))->name('login');
+        Route::resource('auth', AuthController::class)->only(['create', 'store']);
+        ```
+    - Ubah code pada `resources/views/auth/create.blade.php` dengan code berikut
+
+        ```php
+        <x-layout>
+            <h1 class="my-16 text-center text-4xl font-medium text-slate-600">Sign in to your account</h1>
+            <x-card class="py-8 px-16">
+                <form action="{{ route('auth.store') }}" method="POST">
+                    @csrf
+                    <div class="mb-8">
+                        <label for="">E-mail</label>
+                        <x-text-input name="email" type="email" required/>
+                    </div>
+
+                    <div class="mb-8">
+                        <label for="">Password</label>
+                        <x-text-input name="password" type="password" required/>
+                    </div>
+                </form>
+            </x-card>
+        </x-layout>
+        ```
+    - Ubah code pada component `TextInput` class pada file `app/View/Components/TextInput.php` dengan menambahkan
+
+        ```php
+        public ?string $type = 'text'
+        ```
+    - Ubah code pada file `resources/views/components/text-input.blade.php` dengan menambahkan `type` pada `<input>`
+
+        ```php
+        <input x-ref="input-{{ $name }}" placeholder="{{ $placeholder }}" name="{{ $name }}"
+           value="{{ $value }}" id="{{ $name }}" type="{{ $type }}"
+           class="w-full rounded-md border-0 py-1.5 px-2.5 pr-8 text-sm ring-1 ring-slate-300 placeholder:text-slate-400 focus:ring-2"/>
+        ```
+    - Sesuaikan code pada file `resources/views/auth/create.blade.php` dengan menambahkan `type` pada `<x-text-input>`
+
+        ```php
+        <x-layout>
+            <h1 class="my-16 text-center text-4xl font-medium text-slate-600">Sign in to your account</h1>
+            <x-card class="py-8 px-16">
+                <form action="{{ route('auth.store') }}" method="POST">
+                    @csrf
+                    <div class="mb-8">
+                        <label for="email" class="mb-2 block text-sm font-medium text-slate-900">E-mail</label>
+                        <x-text-input name="email" type="email" required/>
+                    </div>
+
+                    <div class="mb-8">
+                        <label for="password" class="mb-2 block text-sm font-medium text-slate-900">Password</label>
+                        <x-text-input name="password" type="password" required/>
+                    </div>
+
+                    <div class="mb-8 flex justify-between text-sm font-medium">
+                        <div>
+                            <div class="flex items-center space-x-2">
+                                <input type="checkbox" name="remember" class="rounded-sm border border-slate-400"/>
+                                <label for="remember" class="ml-2">Remember me</label>
+                            </div>
+                        </div>
+                        <div>
+                            <a href="#" class="text-indigo-600 hover:underline">Forget password?</a>
+                        </div>
+                    </div>
+
+                    <x-button class="w-full bg-green-50">Login</x-button>
+
+                </form>
+            </x-card>
+        </x-layout>
+        ```
+    - Ubah code `seeder` pada file `database/seeders/DatabaseSeeder.php` dengan menambahkan code berikut
+
+        ```php
+        ...
+        User::factory()->create([
+            'name' => 'Test User',
+            'email' => 'test@user.com',
+        ]);
+        ...
+        ```
+    - Run seeder
+
+        ```bash
+        ./vendor/bin/sail artisan migrate:refresh --seed
+        ```
+    - Implementasi logic login pada `AuthController`
+
+        ```php
+        use Illuminate\Http\Request;
+        use Illuminate\Support\Facades\Auth;
+        ...
+        public function store(Request $request)
+        {
+            $request->validate([
+                'email' => 'required|email',
+                'password' => 'required'
+            ]);
+
+            $credentials = $request->only('email', 'password');
+            $remember = $request->filled('remember');
+
+            if (Auth::attempt($credentials, $remember)) {
+                return redirect()->intended('/');
+            } else {
+                return redirect()->back()->with('error', 'Invalid credentials');
+            }
+        }
+        ...
+        ```
+    - Ubah `views/components/layout.blade.php` dengan menambahkan code berikut
+
+        ```php
+        ...
+        {{ auth()->user()->name ?? 'Guest' }}
+        ...
+        ```
+    - Test dengan login menggunakan details `test@user.com` dan `password`
+    - Implementasi logic logout pada `AuthController`
+
+        ```php
+        ...
+        public function destroy()
+        {
+            Auth::logout();
       
+            request()->session()->invalidate();
+            request()->session()->regenerateToken();
+
+            return redirect('/');
+        }
+        ...
+        ```
+    - Ubah `routes/web.php` dengan menambahkan route
+
+        ```php
+        Route::delete('logout', fn() => to_route('auth.destroy'))->name('logout');
+        Route::delete('auth', [AuthController::class, 'destroy'])->name('auth.destroy');
+        ```
+    - Ubah `views/components/layout.blade.php` dengan mengganti code `{{ auth()->user()->name ?? 'Guest' }}` dengan code berikut
+
+        ```php
+        ...
+        <nav class="mb-8 flex justify-between text-lg font-medium">
+            <ul class="flex space-x-2">
+                <li>
+                    <a href="{{ route('jobs.index') }}">Home</a>
+                </li>
+            </ul>
+
+            <ul class="flex space-x-2">
+                @auth
+                    <li>
+                        {{ auth()->user()->name  ?? 'Anonymous' }}
+                    </li>
+                    <li>
+                        <form action="{{ route('auth.destroy') }}" method="POST">
+                            @csrf
+                            @method('DELETE')
+                            <button>Sign Out</button>
+                        </form>
+                    </li>
+                @else
+                    <li>
+                        <a href="{{ route('auth.create') }}">Sign In</a>
+                    </li>
+                @endauth
+            </ul>
+        </nav>
+        ...
+        ```

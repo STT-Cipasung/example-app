@@ -33,5 +33,10 @@ class DatabaseSeeder extends Seeder
                 'employer_id' => $employers->random()->id,
             ]);
         }
+
+        User::factory()->create([
+            'name' => 'Test User',
+            'email' => 'test@user.com',
+        ]);
     }
 }
