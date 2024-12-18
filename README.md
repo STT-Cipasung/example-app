@@ -981,3 +981,87 @@
         window.Alpine = Alpine
         Alpine.start()
         ```
+
+## Refactor: Refactoring Filtering Backend Logic
+- Refactor: Refactoring Filtering Backend Logic
+    - Refactor code pada `resources/views/job/index.blade.php` dengan menambahkan `x-data` pada `<x-card>`. https://alpinejs.dev/directives/data
+
+        ```php
+        <x-card class="mb-4 text-sm" x-data="">
+        ```
+    - Refactor code pada file `resources/views/job/index.blade.php` dengan menambahkan `x-ref` pada form
+
+        ```php
+        <form x-ref="filters" id="filtering-form" action="{{ route('jobs.index') }}" method="GET">
+        ```
+    - Refactor code pada file `resources/views/job/index.blade.php` dengan menambahkan `form-id` pada `<x-text-input>`
+
+        ```php
+        ...
+        <x-text-input name="search" value="{{ request('search') }}" placeholder="Search for any text" form-ref="filtering-form"/>
+        ...
+        <x-text-input name="min_salary" value="{{ request('min_salary') }}" placeholder="From" form-ref="filtering-form"/>
+        <x-text-input name="max_salary" value="{{ request('max_salary') }}" placeholder="To" form-ref="filtering-form"/>
+        ...
+        ```
+    - Refactor `TextInput` class pada file `app/View/Components/TextInput.php` dengan merubah attribute `$formId` menjadi `$formRef`
+
+        ```php
+        public function __construct(
+            public ?string $value = null,
+            public ?string $name = null,
+            public ?string $placeholder = null,
+            public ?string $formRef = null,
+        )
+        {}
+        ```
+    - Refactor code pada file `resources/views/components/text-input.blade.php` dengan menambahkan `x-ref` pada `<input>`
+
+        ```php
+        <input x-ref="input-{{ $name }}" type="text" placeholder="{{ $placeholder }}" name="{{ $name }}" value="{{ $value }}" id="{{ $name }}"
+           class="w-full rounded-md border-0 py-1.5 px-2.5 pr-8 text-sm ring-1 ring-slate-300 placeholder:text-slate-400 focus:ring-2"/>
+        ```
+    - Refactor code pada file `resources/views/components/text-input.blade.php` untuk mengganti `onclick` pada button dengan `@click` dan pada logic `if`
+
+        ```php
+        ...
+        @if($formRef)
+        <button type="button" class="absolute top-0 right-0 flex h-full items-center pr-2"
+                @click="$refs['input-{{ $name }}'].value = ''; $refs['{{ $formRef }}'].submit()">
+        ...
+        ```
+    - Refactor `Job` model untuk mendukung local query scope
+
+        ```php
+        ...
+        use Illuminate\Database\Eloquent\Builder;
+        use Illuminate\Database\Query\Builder as QueryBuilder;
+        ...
+        public function scopeFilter(Builder|QueryBuilder $query, array $filters)
+        {
+            return $query->when($filters['search'] ?? null, function ($query, $search) {
+                $query->where(function ($query) use ($search) {
+                    $query->where('title', 'like', '%' . $search . '%')
+                        ->orWhere('description', 'like', '%' . $search . '%');
+                    });
+            })->when($filters['min_salary'] ?? null, function ($query, $minSalary) {
+                $query->where('salary', '>=', $minSalary);
+            })->when($filters['max_salary'] ?? null, function ($query, $maxSalary) {
+                $query->where('salary', '<=', $maxSalary);
+            })->when($filters['experience'] ?? null, function ($query, $experience) {
+                $query->where('experience', $experience);
+            })->when($filters['category'] ?? null, function ($query, $category) {
+                $query->where('category', $category);
+            });
+        }
+        ```
+    - Refactor `JobController` untuk fungsi filter
+
+        ```php
+        ...
+        $filters = request()->only(['search', 'min_salary', 'max_salary', 'experience', 'category']);
+
+        return view('job.index', ['jobs' => Job::filter($filters)->get()]);
+        ...
+        ```
+      
