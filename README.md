@@ -1717,7 +1717,7 @@
 
         use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
-        abstract class Controller
+        abstract class Controller extends \Illuminate\Routing\Controller
         {
             use AuthorizesRequests;
         }
@@ -2128,6 +2128,102 @@
         @endif
         ...
         ```
-      
+
+## Employer: Register as an Employer
+
+- Employer: Register as an Employer
+    - Buat controller `EmployerController` dengan command berikut
+
+        ```bash
+        ./vendor/bin/sail artisan make:controller EmployerController --resource
+        ```
+    - Buat employer policy dengan command berikut
+
+        ```bash
+        ./vendor/bin/sail artisan make:policy EmployerPolicy --model=Employer
+        ```
+    - Refactor code pada file `app/Policies/EmployerPolicy.php` dengan menambahkan fungsi `create`
+
+        ```php
+        ...
+        public function create(User $user): bool
+        {
+            return null === $user->employer;
+        }
+        ...
+        public function update(User $user, Employer $employer): bool
+        {
+            return $employer->user_id === $user->id;
+        }
+        ...
+        ```
+    - Refactor code `EmployerController` dengan menambahkan fungsi `create`
+
+        ```php
+        ...
+        public function __construct()
+        {
+            $this->authorize(Employer::class);
+        }
+        ...
+        ```
+    - Register route pada file `routes/web.php`
+
+        ```php
+        Route::middleware('auth')->group(function () {
+            ...
+            Route::resource('employer', EmployerController::class)->only(['create', 'store']);
+            ...
+        });
+        ```
+    - Buat view `resources/views/employer/create.blade.php` dengan command berikut
+
+        ```bash
+        ./vendor/bin/sail artisan make:view employer.create
+        ```
+    - Refactor code pada file `resources/views/employer/create.blade.php` dengan code berikut
+
+        ```php
+        <x-layout>
+            <x-card>
+                <form action="{{ route('employer.store') }}" method="POST">
+                    @csrf
+                    <div class="mb-4">
+                        <x-label for="company_name" :required="true">Company Name</x-label>
+                        <x-text-input name="company_name"/>
+                    </div>
+
+                    <x-button class="w-full">Create</x-button>
+                </form>
+            </x-card>
+        </x-layout>
+        ```
+    - Refactor code pada file `app/Http/Controllers/EmployerController.php` dengan menambahkan fungsi `store`
+
+        ```php
+        public function create()
+        {
+            return view('employer.create');
+        }
+        ...
+        public function store(Request $request)
+        {
+            auth()->user()->employer()->create(
+                $request->validate([
+                    'company_name' => 'required|min:3|unique:employers,company_name',
+                ]),
+            );
+
+            return redirect()->route('jobs.index')
+                ->with('success', 'Employer profile created successfully.');
+        }
+        ```
+    - Refacfor model `Employer` dengan menambahkan `fillable`
+
+        ```php
+        ...
+        protected $fillable = ['company_name'];
+        ...
+        ```
 
       
