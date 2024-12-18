@@ -2629,5 +2629,166 @@
         }
         ...
         ```
+
+## Employer: Job Policy
+- Employer: Job Policy
+    - Refactor `JobPolicy` pada file `app/Policies/JobPolicy.php` dengan menambahkan fungsi `update`
+
+        ```php
+        ...
+        public function viewAnyEmployer(User $user): bool
+        {
+            return true;
+        }
+        ...
+        public function create(User $user): bool
+        {
+            return null !== $user->employer;
+        }
+        ...
+        public function update(User $user, Job $job): bool | Response
+        {
+            if ($job->employer->user_id !== $user->id) {
+                return false;
+            }
+
+            if ($job->jobApplications()->count() > 0) {
+                return Response::deny('You cannot update a job that has applications.');
+            }
+
+            return true;
+        }
+        ...
+        public function delete(User $user, Job $job): bool
+        {
+            return $job->employer->user_id === $user->id;
+        }
+        ```
+    - Refactor `JobController` dengan menambahkan fungsi `update`
+
+        ```php
+        ...
+        public function index()
+        {
+            $this->authorize('viewAny', Job::class);
+            $filters = request()->only(['search', 'min_salary', 'max_salary', 'experience', 'category']);
+
+            return view('job.index', ['jobs' => Job::with('employer')->latest()->filter($filters)->get()]);
+        }
+        ...
+        public function show(Job $job)
+        {
+            $this->authorize('view', $job);
+            return view('job.show', ['job' => $job->load('employer')]);
+        }
+        ```
+    - Rafactor `MyJobController` dengan menambahkan fungsi `update`
+
+        ```php
+        ...
+        public function index()
+        {
+            $this->authorize('viewAnyEmployer', Job::class);
+
+            return view('my_job.index', [
+                'jobs' => auth()->user()->employer
+                    ->jobs()
+                    ->with('employer', 'jobApplications', 'jobApplications.user')
+                    ->latest()
+                    ->get()
+            ]);
+        }
+        ...
+        public function create()
+        {
+            $this->authorize('create', Job::class);
+            return view('my_job.create');
+        }
+        ...
+        public function store(JobRequest $request)
+        {
+            $this->authorize('create', Job::class);
+            auth()->user()->employer->jobs()->create($request->validated());
+
+            return redirect()->route('my-jobs.index')
+                ->with('success', 'Job created successfully!');
+        }
+        ...
+        public function edit(Job $myJob)
+        {
+            $this->authorize('update', $myJob);
+            return view('my_job.edit', ['job' => $myJob]);
+        }
+        ...
+        public function update(JobRequest $request, Job $myJob)
+        {
+            $this->authorize('update', $myJob);
+            $myJob->update($request->validated());
+
+            return redirect()->route('my-jobs.index')
+                ->with('success', 'Job updated successfully!');
+        } 
+        ...
+        public function destroy(Job $myJob)
+        {
+            $this->authorize('delete', $myJob);
+            $myJob->delete();
+
+            return redirect()->route('my-jobs.index')
+                ->with('success', 'Job deleted successfully!');
+        }
+        ```
+    - Refactor view `resources/views/my_job/index.blade.php` dengan menambahkan button `Delete` dekat dengan button `Edit`
+
+        ```php
+        ...
+        <form action="{{ route('my-jobs.destroy', $job) }}", method="POST">
+            @csrf
+            @method('DELETE')
+            <x-button>Delete</x-button>
+        </form>
+        ...
+        ```
+    - Delete dengan menggunakan `SOFT DELETE`
+    - Buat migrasi baru dengan nama `AddSoftDeletesToJobsTable` dengan command berikut
+
+        ```bash
+        ./vendor/bin/sail artisan make:migration AddSoftDeletesToJobsTable
+        ```
+    - Refactor code pada file `database/migrations/add_soft_deletes_to_jobs_table.php` dengan code berikut
+
+        ```php
+        ...
+        public function up(): void
+        {
+            Schema::table('job', function (Blueprint $table) {
+                $table->softDeletes();
+            });
+        }
+        ...
+        public function down(): void
+        {
+            Schema::table('job', function (Blueprint $table) {
+                $table->dropSoftDeletes();
+            });
+        }
+        ...
+        ```
+    - Run migration
+
+        ```bash
+        ./vendor/bin/sail artisan migrate
+        ```
+    - Refactor model `Job` dengan menambahkan `SoftDeletes`
+
+        ```php
+        ...
+        use Illuminate\Database\Eloquent\SoftDeletes;
+        ...
+        class Job extends Model
+        {
+            use HasFactory, SoftDeletes;
+        ...
+        ```
     
       
