@@ -809,3 +809,33 @@
         })
         ...
         ```
+
+## Filtering Jobs: Configuring Labels and Arrays in PHP
+- Disini kita akan membuat array yang berisi label dan value untuk radio button
+    - Refactor code `RadioGroup` class pada file `app/View/Components/RadioGroup.php` tambahkan fucntion seperti berikut
+
+        ```php
+        public function optionsWithLabels(): array
+        {
+            return  array_is_list($this->options)
+                ? array_combine($this->options, $this->options)
+                : $this->options;
+        }
+        ```
+    - Refactor code pada file `resources/views/components/radio-group.blade.php` menjadi seperti berikut
+
+        ```php
+        @foreach($optionsWithLabels as $label => $option)
+            <label for="{{ $name }}" class="mb-1 flex items-center">
+                <input type="radio" name="{{ $name }}" value="{{ $option }}"
+                    @checked($option === request($name))/>
+                <span class="ml-2">{{ $label }}</span>
+            </label>
+        @endforeach
+        ```
+    - Refactor code `<x-radio-group name="experience" :options="\App\Models\Job::$experience" />` pada file `resources/views/job/index.blade.php` menjadi seperti berikut
+
+        ```php
+        <x-radio-group name="experience"
+            :options="array_combine(array_map('ucfirst', \App\Models\Job::$experience), \App\Models\Job::$experience)"/>
+        ```
