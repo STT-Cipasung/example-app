@@ -1,4 +1,5 @@
 # Laravel
+
 ## Setup New Laravel Sail Project or Existing Repository
 
 - Membuat Project Laravel Sail Baru
@@ -13,8 +14,8 @@
         curl -s "https://laravel.build/example-app?with=mysql,redis" | bash
         ```
 
-
 ### Setup Existing Repository
+
 - Jika ingin menggunakan repository Laravel Sail
 
     ```bash
@@ -62,6 +63,7 @@
             ```
 
 ## Job Controller and Seeder
+
 - Membuat Controller
 
     ```bash
@@ -80,6 +82,7 @@
     ```
 
 ## Laravel Debugbar
+
 - Install Laravel Debugbar (https://github.com/barryvdh/laravel-debugbar)
 
     ```bash
@@ -87,6 +90,7 @@
     ```
 
 ## Vite and Tailwind CSS
+
 - Install Sail npm package
 
     ```bash
@@ -98,13 +102,15 @@
     ```bash
     ./vendor/bin/sail npm run dev
     ```
-    - Jika tidak ingin menjalankan npm dibackground, gunakan perintah berikut (harus dijalankan ulang jika ada perubahan pada file css/js)
+    - Jika tidak ingin menjalankan npm dibackground, gunakan perintah berikut (harus dijalankan ulang jika ada perubahan
+      pada file css/js)
 
       ```bash
       ./vendor/bin/sail npm run build
       ```
 
 ## Blade Component and Layout
+
 - Membuat Layout Component
 
     ```bash
@@ -178,8 +184,10 @@
         ```
 
 ## Jobs Page and Card Component
+
 - Halaman Job dan Card Component
-    - Tambahkan style pada layout component. Tambahkan style pada `<body>` di file `resources/views/components/layout.blade.php` sehinnga menjadi seperti berikut
+    - Tambahkan style pada layout component. Tambahkan style pada `<body>` di file
+      `resources/views/components/layout.blade.php` sehinnga menjadi seperti berikut
 
         ```php
         ...
@@ -191,7 +199,8 @@
         ```bash
         ./vendor/bin/sail artisan make:component Card --view
         ```
-    - Tambahkan code berikut pada file `resources/views/components/card.blade.php`. Referensi https://laravel.com/docs/11.x/blade#default-merged-attributes
+    - Tambahkan code berikut pada file `resources/views/components/card.blade.php`.
+      Referensi https://laravel.com/docs/11.x/blade#default-merged-attributes
 
         ```php
         <div {{ $attributes->class(['rounded-md border border-slate-300 bg-white p-4 shadow-sm']) }}>
@@ -211,6 +220,7 @@
         ```
 
 ## Job Page: Tag Component and Job Info
+
 - Halaman Job: Tag Component dan Job Info
     - Ubah code pada file `resources/components/card.blade.php` dari `<div>` menjadi `<article>`. Agar lebih semantic
 
@@ -244,7 +254,8 @@
         ```php
         <p class="text-sm text-slate-500">{!! nl2br(e($job->description)) !!}</p>
         ```
-    - Tambahkan code berikut untuk menampilkan `Company Name`, `Location`, `Experiences`, dan `Category` pada file `resources/views/job/index.blade.php`
+    - Tambahkan code berikut untuk menampilkan `Company Name`, `Location`, `Experiences`, dan `Category` pada file
+      `resources/views/job/index.blade.php`
 
         ```php
         ...
@@ -295,6 +306,7 @@
         ```
 
 ## Job Page: Job Card & Link Button Components
+
 - Halaman Job: Job Card & Link Button Components
     - Tambahkan style `items-center` pada file `resources/views/job/index.blade.php` menjadi seperti berikut
 
@@ -327,7 +339,8 @@
             </x-card>
         </x-layout>
         ```
-    - Ubah code di `<p class="text-sm text-slate-500">` pada file `resources/views/job/index.blade.php` menjadi seperti berikut
+    - Ubah code di `<p class="text-sm text-slate-500">` pada file `resources/views/job/index.blade.php` menjadi seperti
+      berikut
 
         ```php
         <p class="text-sm text-slate-500 mb-4">{!! nl2br(e($job->description)) !!}</p>
@@ -338,7 +351,8 @@
             </a>
         </div>
         ```
-    - Tambahkan style pada `<a href="{{ route('jobs.show', $job) }}">` pada file `resources/views/job/index.blade.php` menjadi seperti berikut
+    - Tambahkan style pada `<a href="{{ route('jobs.show', $job) }}">` pada file `resources/views/job/index.blade.php`
+      menjadi seperti berikut
 
         ```php
         <a href="{{ route('jobs.show', $job) }}" 
@@ -351,7 +365,8 @@
         ```bash
         ./vendor/bin/sail artisan make:component LinkButton --view
         ```
-    - Pindahkan code `<a>` sebelumnya ke dalam component `LinkButton` pada file `resources/views/components/link-button.blade.php` dan ubah menjadi seperti berikut
+    - Pindahkan code `<a>` sebelumnya ke dalam component `LinkButton` pada file
+      `resources/views/components/link-button.blade.php` dan ubah menjadi seperti berikut
 
         ```php
         <a href="{{ $href }}"
@@ -371,7 +386,8 @@
         ```bash
         ./vendor/bin/sail artisan make:component JobCard --view
         ```
-    - Pindahkan code sebelumnya pada file `resources/views/job/index.blade.php` ke dalam component `JobCard` pada file `resources/views/components/job-card.blade.php` dan ubah menjadi seperti berikut
+    - Pindahkan code sebelumnya pada file `resources/views/job/index.blade.php` ke dalam component `JobCard` pada file
+      `resources/views/components/job-card.blade.php` dan ubah menjadi seperti berikut
 
         ```php
         <x-card class="mb-4">
@@ -420,6 +436,7 @@
         ```
 
 ## Breadcrumbs Navigation
+
 - Breadcrumbs Navigation
     - Tambahkan code pada file `resources/views/job/show.blade.php` menjadi seperti berikut
 
@@ -449,7 +466,8 @@
         ```bash
         ./vendor/bin/sail artisan make:component Breadcrumbs
         ```
-    - Pindahkan code sebelumnya pada file `resources/views/job/show.blade.php` ke dalam component `Breadcrumbs` pada file `resources/views/components/breadcrumbs.blade.php` dan ubah menjadi seperti berikut
+    - Pindahkan code sebelumnya pada file `resources/views/job/show.blade.php` ke dalam component `Breadcrumbs` pada
+      file `resources/views/components/breadcrumbs.blade.php` dan ubah menjadi seperti berikut
 
         ```php
         <nav class="mb-4">
@@ -474,7 +492,8 @@
             <x-job-card :job="$job" />
         </x-layout>
         ```
-    - Ubah code pada file `resources/views/components/breadcrumbs.blade.php` agar menjadi lebih universal menjadi seperti berikut
+    - Ubah code pada file `resources/views/components/breadcrumbs.blade.php` agar menjadi lebih universal menjadi
+      seperti berikut
 
         ```php
         <nav {{ $attributes }}>
@@ -517,6 +536,7 @@
         ```
 
 ## Filtering Jobs: Tailwind Form Plugin & Text Inputs
+
 - Filtering Jobs: Tailwind Form Plugin & Text Inputs
     - Reference https://tailwindcss.com/docs/plugins#forms
     - Install Tailwind Form Plugin
@@ -534,7 +554,8 @@
             ],
         }
         ```
-    - Ubah code pada file `resources/views/job/index.blade.php` dengan menambahkan code berikut diantara `breadcrumbs` dan `@foreach`
+    - Ubah code pada file `resources/views/job/index.blade.php` dengan menambahkan code berikut diantara `breadcrumbs`
+      dan `@foreach`
 
         ```php
         <x-card class="mb-4 text-sm">
@@ -589,6 +610,7 @@
         ```
 
 ## Filtering Jobs: Form & Searching for Text in Job Posts
+
 - Filtering Jobs: Form & Searching for Text in Job Posts
     - Refactor code pada file `resources/views/components/job-card.blade.php`, hapus bagian ini
 
@@ -604,7 +626,8 @@
         </x-job-card>
         ...
         ```
-    - Refactor code pada file `resources/views/job/index.blade.php` dengan menambahkan code berikut diantara `breadcrumbs` dan `@foreach`
+    - Refactor code pada file `resources/views/job/index.blade.php` dengan menambahkan code berikut diantara
+      `breadcrumbs` dan `@foreach`
 
         ```php
         ...
@@ -637,6 +660,7 @@
         ```
 
 ## Filtering Jobs: Min & Max Salary
+
 - Filtering Jobs: Min & Max Salary
     - Refactor code pada file `resources/views/components/job-card.blade.php`, hapus bagian ini
 
@@ -668,6 +692,7 @@
         ```
 
 ## Filtering Jobs: Radio Button Filters
+
 - Pilih Salah Satu dari Beberapa
     - Ubah `<div>3</div>` pada file `resources/views/job/index.blade.php` menjadi sebagai berikut
 
@@ -713,7 +738,8 @@
             $query->where('experience', request('experience'));
         });
         ```
-    - Handle checkbox pada `resources/views/job/index.blade.php` dengan menggunakan referensi https://laravel.com/docs/11.x/blade#authentication-directives, dan rubah code menjadi seperti berikut
+    - Handle checkbox pada `resources/views/job/index.blade.php` dengan menggunakan
+      referensi https://laravel.com/docs/11.x/blade#authentication-directives, dan rubah code menjadi seperti berikut
 
         ```php
         <label for="experience" class="mb-1 flex items-center">
@@ -754,7 +780,8 @@
         )
         {}
         ```
-    - Copy code input pada file `resources/views/job/index.blade.php` ke dalam file `resources/views/components/radio-group.blade.php` dan ubah menjadi seperti berikut
+    - Copy code input pada file `resources/views/job/index.blade.php` ke dalam file
+      `resources/views/components/radio-group.blade.php` dan ubah menjadi seperti berikut
 
         ```php
         <label for="experience" class="mb-1 flex items-center">
@@ -811,6 +838,7 @@
         ```
 
 ## Filtering Jobs: Configuring Labels and Arrays in PHP
+
 - Disini kita akan membuat array yang berisi label dan value untuk radio button
     - Refactor code `RadioGroup` class pada file `app/View/Components/RadioGroup.php` tambahkan fucntion seperti berikut
 
@@ -833,7 +861,8 @@
             </label>
         @endforeach
         ```
-    - Refactor code `<x-radio-group name="experience" :options="\App\Models\Job::$experience" />` pada file `resources/views/job/index.blade.php` menjadi seperti berikut
+    - Refactor code `<x-radio-group name="experience" :options="\App\Models\Job::$experience" />` pada file
+      `resources/views/job/index.blade.php` menjadi seperti berikut
 
         ```php
         <x-radio-group name="experience"
@@ -841,6 +870,7 @@
         ```
 
 ## Filtering Jobs: Clearing the Input
+
 - Clearing the Input
     - Heroicons (https://heroicons.com/)
     - Refactor code pada file `resources/views/components/text-input.blade.php` dengan menambahkan code berikut
@@ -863,7 +893,8 @@
                 class="w-full rounded-md border-0 py-1.5 px-2.5 pr-8 text-sm ring-1 ring-slate-300 placeholder:text-slate-400 focus:ring-2"/>
         </div>
         ```
-    - Tambahkan logic untuk button pada file `resources/views/components/text-input.blade.php` dengan menambahkan code berikut pada inline `<button class="absolute top-0 right-0 flex h-full items-center pr-2">`
+    - Tambahkan logic untuk button pada file `resources/views/components/text-input.blade.php` dengan menambahkan code
+      berikut pada inline `<button class="absolute top-0 right-0 flex h-full items-center pr-2">`
 
         ```php
         <button type="button" class="absolute top-0 right-0 flex h-full items-center pr-2"
@@ -894,23 +925,27 @@
             </button>
         @endif
         ```
-    - Refactor code pada file `resources/views/job/index.blade.php` dengan `id` pada `<form action="{{ route('jobs.index') }}" method="GET">`
+    - Refactor code pada file `resources/views/job/index.blade.php` dengan `id` pada
+      `<form action="{{ route('jobs.index') }}" method="GET">`
 
         ```php
         <form id="filtering-form" action="{{ route('jobs.index') }}" method="GET">
         ```
-    - Refactor code pada file `resources/views/job/index.blade.php` dengan menambahkan `form-id` pada `<x-text-input name="search" value="{{ request('search') }}" placeholder="Search for any text"/>`
+    - Refactor code pada file `resources/views/job/index.blade.php` dengan menambahkan `form-id` pada
+      `<x-text-input name="search" value="{{ request('search') }}" placeholder="Search for any text"/>`
 
         ```php
         <x-text-input name="search" value="{{ request('search') }}" placeholder="Search for any text" form-id="filtering-form"/>
         ```
-    - Refactor code pada file `resources/views/job/index.blade.php` pada `<x-text-input>` lainnya dengan menambahkan `form-id` pada masing-masing
+    - Refactor code pada file `resources/views/job/index.blade.php` pada `<x-text-input>` lainnya dengan menambahkan
+      `form-id` pada masing-masing
 
         ```php
         <x-text-input name="min_salary" value="{{ request('min_salary') }}" placeholder="From" form-id="filtering-form"/>
         <x-text-input name="max_salary" value="{{ request('max_salary') }}" placeholder="To" form-id="filtering-form"/>
         ```
-    - Refactor code pada file `resources/views/components/text-input.blade.php` dengan menambahkan logic submit form pada button
+    - Refactor code pada file `resources/views/components/text-input.blade.php` dengan menambahkan logic submit form
+      pada button
 
         ```php
         <button type="button" class="absolute top-0 right-0 flex h-full items-center pr-2"
@@ -918,13 +953,15 @@
         ```
 
 ## Refactor: Gradient Background, STyling Buttons, Adding Alpine.js
+
 - Refactor: Gradient Background, STyling Buttons, Adding Alpine.js
     - Refactor code pada file `resources/views/components/layout.blade.php` dengan menambahkan style gradient background
 
         ```php
         <body class="mx-auto mt-10 max-w-2xl bg-gradient-to-r from-indigo-500 from-10% via-sky-500 via-30% to-emerald-500 to-90% text-slate-700">
         ```
-    - Refactor code pada file `resources/views/components/job-card.blade.php` dengan mengubah `<x-tag>{{ Str::ucfirst($job->experience) }}</x-tag>` menjadi sebagai berikut
+    - Refactor code pada file `resources/views/components/job-card.blade.php` dengan mengubah
+      `<x-tag>{{ Str::ucfirst($job->experience) }}</x-tag>` menjadi sebagai berikut
 
         ```php
         <x-tag>
@@ -933,7 +970,8 @@
             </a>
         </x-tag>
         ```
-    - Refactor code pada file `resources/views/components/job-card.blade.php` dengan mengubah `<x-tag>{{ $job->category }}</x-tag>` menjadi sebagai berikut
+    - Refactor code pada file `resources/views/components/job-card.blade.php` dengan mengubah
+      `<x-tag>{{ $job->category }}</x-tag>` menjadi sebagai berikut
 
         ```php
         <x-tag>
@@ -947,7 +985,8 @@
         ```bash
         ./vendor/bin/sail artisan make:component Button --view
         ```
-    - Refactor code pada component baru yang telah dibuat pada file `resources/views/components/button.blade.php` dengan code berikut
+    - Refactor code pada component baru yang telah dibuat pada file `resources/views/components/button.blade.php` dengan
+      code berikut
 
         ```php
         <button {{ $attributes->class(['rounded-md border border-slate-300 bg-white px-2.5 py-1.5 text-center text-sm font-semibold text-black shadow-sm hover:bg-slate-100']) }}>
@@ -983,8 +1022,10 @@
         ```
 
 ## Refactor: Refactoring Filtering Backend Logic
+
 - Refactor: Refactoring Filtering Backend Logic
-    - Refactor code pada `resources/views/job/index.blade.php` dengan menambahkan `x-data` pada `<x-card>`. https://alpinejs.dev/directives/data
+    - Refactor code pada `resources/views/job/index.blade.php` dengan menambahkan `x-data` pada
+      `<x-card>`. https://alpinejs.dev/directives/data
 
         ```php
         <x-card class="mb-4 text-sm" x-data="">
@@ -1004,7 +1045,8 @@
         <x-text-input name="max_salary" value="{{ request('max_salary') }}" placeholder="To" form-ref="filtering-form"/>
         ...
         ```
-    - Refactor `TextInput` class pada file `app/View/Components/TextInput.php` dengan merubah attribute `$formId` menjadi `$formRef`
+    - Refactor `TextInput` class pada file `app/View/Components/TextInput.php` dengan merubah attribute `$formId`
+      menjadi `$formRef`
 
         ```php
         public function __construct(
@@ -1015,13 +1057,15 @@
         )
         {}
         ```
-    - Refactor code pada file `resources/views/components/text-input.blade.php` dengan menambahkan `x-ref` pada `<input>`
+    - Refactor code pada file `resources/views/components/text-input.blade.php` dengan menambahkan `x-ref` pada
+      `<input>`
 
         ```php
         <input x-ref="input-{{ $name }}" type="text" placeholder="{{ $placeholder }}" name="{{ $name }}" value="{{ $value }}" id="{{ $name }}"
            class="w-full rounded-md border-0 py-1.5 px-2.5 pr-8 text-sm ring-1 ring-slate-300 placeholder:text-slate-400 focus:ring-2"/>
         ```
-    - Refactor code pada file `resources/views/components/text-input.blade.php` untuk mengganti `onclick` pada button dengan `@click` dan pada logic `if`
+    - Refactor code pada file `resources/views/components/text-input.blade.php` untuk mengganti `onclick` pada button
+      dengan `@click` dan pada logic `if`
 
         ```php
         ...
@@ -1063,5 +1107,139 @@
 
         return view('job.index', ['jobs' => Job::filter($filters)->get()]);
         ...
+        ```
+
+## Employer: Model, Migration, Relations
+
+- Employer: Model, Migration, Relations
+    - Buat model `Employer` dengan command berikut
+
+        ```bash
+        ./vendor/bin/sail artisan make:model Employer -m -f
+        ```
+    - Refactor code pada file `database/migrations/create_employers_table.php` menjadi seperti berikut
+
+        ```php
+        public function up(): void
+        {
+            Schema::create('employers', function (Blueprint $table) {
+                $table->id();
+
+                $table->string('company_name');
+                $table->foreignIdFor(\App\Models\Employer::class)->nullable()->constrained();
+
+                $table->timestamps();
+            });
+
+            Schema::table('job', function (Blueprint $table) {
+                $table->foreignIdFor(\App\Models\Employer::class)->constrained();
+            });
+        }
+      
+        public function down(): void
+        {
+            Schema::table('job', function (Blueprint $table) {
+            $table->dropForeignIdFor(\App\Models\Employer::class);
+            });
+
+            Schema::dropIfExists('employers');
+        }
+        ```
+    - Refactor code pada file `app/Models/Employer.php` dengan menambahkan relasi `hasMany`
+
+        ```php
+        ...
+        use Illuminate\Database\Eloquent\Relations\BelongsTo;
+        use Illuminate\Database\Eloquent\Relations\HasMany;
+        ...
+        public function jobs():HasMany
+        {
+            return $this->hasMany(Job::class);
+        }
+        public function user(): BelongsTo
+        {
+            return $this->belongsTo(User::class);
+        }
+        ...
+        ```
+    - Refactor code pada file `app/Models/Job.php` dengan menambahkan relasi `belongsTo`
+
+        ```php
+        ...
+        use Illuminate\Database\Eloquent\Relations\BelongsTo;
+        ...
+        public function employer(): BelongsTo
+        {
+            return $this->belongsTo(Employer::class);
+        }
+        ...
+        ```
+    - Refactor code pada file `app/Models/User.php` dengan menambahkan relasi `hasOne`
+
+        ```php
+        ...
+        use Illuminate\Database\Eloquent\Relations\HasOne;
+        ...
+        public function employer(): HasOne
+        {
+            return $this->hasOne(Employer::class);
+        }
+        ...
+        ```
+    - Bersihkan DB (**Jangan Jalankan di Production!!!**) dan jalankan migration
+
+        ```bash
+        ./vendor/bin/sail artisan db:wipe && ./vendor/bin/sail artisan migrate
+        ```
+    - Buat controller `EmployerController` dengan command berikut
+
+        ```bash
+        ./vendor/bin/sail artisan make:controller EmployerController
+        ```
+    - Buat resource controller `EmployerController` dengan command berikut
+
+        ```bash
+        ./vendor/bin/sail artisan make:controller EmployerController --resource
+        ```
+    - Refactor code pada file `database/factories/EmployeerFactory.php` dengan menambahkan code berikut
+
+        ```php
+        ...
+        'company_name' => $this->faker->company,
+        ...
+        ```
+    - Refactor code `database/seeders/DatabaseSeeder.php` dengan menambahkan code berikut
+
+        ```php
+        use App\Models\Employer;
+        use App\Models\Job;
+        use App\Models\User;
+        ...
+        public function run(): void
+        {
+            User::factory(300)->create();
+
+            $users = User::all()->shuffle();
+
+            for ($i=0; $i<20; $i++) {
+                Employer::factory()->create([
+                    'user_id' => $users->pop()->id,
+                ]);
+            }
+
+            $employers = Employer::all();
+
+            for ($i=0; $i<100; $i++) {
+                Job::factory()->create([
+                    'employer_id' => $employers->random()->id,
+                ]);
+            }
+        }
+        ...
+        ```
+    - Run seeder
+
+        ```bash
+        ./vendor/bin/sail artisan migrate:refresh --seed
         ```
       
