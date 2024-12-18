@@ -2226,4 +2226,90 @@
         ...
         ```
 
+## Employer: Middleware Checking for Permissions
+- Employer: Middleware Checking for Permissions
+    - Buat `MyJobController` dengan command berikut
+
+        ```bash
+        ./vendor/bin/sail artisan make:controller MyJobController --resource
+        ```
+    - Buat view `resources/views/my_job/index.blade.php` dengan command berikut
+
+        ```bash
+        ./vendor/bin/sail artisan make:view my_job.index
+        ```
+    - Refactor view `resources/views/my_job/index.blade.php` dengan code berikut
+
+        ```php
+        <x-layout>
+            <x-card>
+                All Jobs
+            </x-card>
+        </x-layout>
+        ```
+    - Refactor route pada file `routes/web.php` dengan menambahkan route
+
+        ```php
+        Route::middleware('auth')->group(function () {
+            ...
+            Route::resource('my-jobs', MyJobController::class);
+            ...
+        });
+        ```
+    - Refactor code pada `resources/views/components/layout.blade.php` dengan menambahkan link untuk menu `My Jobs` diantara link `User` dan `Sign Out`
+
+        ```php
+        ...
+        <li>
+            <a href="{{ route('my-jobs.index') }}">
+                My Jobs
+            </a>
+        </li>
+        ...
+        ```
+    - Buat sebuah middleware `EmployerMiddleware` dengan command berikut (https://laravel.com/docs/11.x/middleware)
+
+        ```bash
+        ./vendor/bin/sail artisan make:middleware EmployerMiddleware
+        ```
+    - Refactor `EmployerMiddleware` pada file `app/Http/Middleware/EmployerMiddleware.php` dengan code berikut
+
+        ```php
+        ...
+        public function handle(Request $request, Closure $next): Response
+        {
+            if (null === $request->user() || null === $request->user()->employer) {
+                return redirect()->route('employer.create')
+                    ->with('error', 'You need to register as an employer first!');
+            }
+
+            return $next($request);
+        }
+        ...
+        ```
+    - Register middleware pada file `bootstrap/app.php` dengan menambahkan code berikut
+
+        ```php
+        ...
+        use App\Http\Middleware\EmployerMiddleware;
+        ...
+            ->withMiddleware(function (Middleware $middleware) {
+                $middleware->alias([
+                    'employer' => EmployerMiddleware::class,
+                ]);
+            })
+        ...
+        ```
+    - Refactor route pada file `routes/web.php` dengan menambahkan middleware dengan merubah `Route::resource('my-jobs', MyJobController::class);` menjadi
+
+        ```php
+        Route::middleware('auth')->group(function () {
+            ...
+            Route::middleware('employer')->resource('my-jobs', MyJobController::class);
+            ...
+        });
+        ```
+    
+    
+
       
