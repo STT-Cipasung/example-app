@@ -2309,7 +2309,142 @@
             ...
         });
         ```
-    
-    
 
+## Employer: Adding Jobs Form
+- Employer: Adding Jobs Form
+    - Buat view `resources/views/my_job/create.blade.php` dengan command berikut
+
+        ```bash
+        ./vendor/bin/sail artisan make:view my_job.create
+        ```
+    - Refactor code pada file `resources/views/my_job/create.blade.php` dengan code berikut
+
+        ```php
+        <x-layout>
+            <x-breadcrumbs class="mb-4" :links="['My Jobs' => route('my-jobs.index'), 'Create' => '#']"/>
+
+            <x-card class="mb-8">
+                <form action="{{ route('my-jobs.store') }}" method="POST">
+                    <div class="mb-4 grid grid-cols-2 gap-4">
+                        <div>
+                            <x-label for="title" :required="true">Job Title</x-label>
+                            <x-text-input name="title"/>
+                        </div>
+                        <div>
+                            <x-label for="location" :required="true">Location</x-label>
+                            <x-text-input name="location"/>
+                        </div>
+                        <div class="col-span-2">
+                            <x-label for="salary" :required="true">Salary</x-label>
+                            <x-text-input name="salary" type="number"/>
+                        </div>
+
+                        <div class="col-span-2">
+                            <x-label for="description" :required="true">Description</x-label>
+                            <x-text-input name="description" type="textarea"/>
+                        </div>
+
+                        <div>
+                            <x-label for="experience" :required="true">Experience</x-label>
+                            <x-radio-group name="experience" :value="old('experience')" :allOption="false"
+                                   :options="array_combine(array_map('ucfirst', \App\Models\Job::$experience), \App\Models\Job::$experience)"/>
+                        </div>
+
+                        <div>
+                            <x-label for="category" :required="true">Category</x-label>
+                            <x-radio-group name="category" :value="old('category')" :allOption="false" :options="\App\Models\Job::$category"/>
+                        </div>
+                    </div>
+                </form>
+            </x-card>
+        </x-layout>
+        ```
+    - Refactor `MyJobController` dengan menambahkan fungsi `create`
+
+        ```php
+        ...
+        public function create()
+        {
+            return view('my_job.create');
+        }
+        ...
+        ```
+    - Refactor `RadioGroup` component pada file `app/View/Components/RadioGroup.php` dengan code berikut
+
+        ```php
+        ...
+        public function __construct(
+            public string $name,
+            public array $options,
+            public ?bool $allOption = true,
+            public ?string $value = null,
+        )
+        ...
+        ```
+    - Refactor radio group component view `resources/views/components/radio-group.blade.php` dengan code berikut
+
+        ```php
+        @if($allOption)
+            <label for="{{ $name }}" class="mb-1 flex items-center">
+                <input type="radio" name="{{ $name }}" value=""
+                    @checked($option === ($value ?? request($name)))/>
+                <span class="ml-2">All</span>
+            </label>
+        @endif
+        ...
+        @error($name)
+            <div class="mt-1 tx-xs text-red-500">
+                {{ $message }}
+            </div>
+        @enderror
+        ```
+    - Implementasi logic pada `MyJobController` dengan menambahkan fungsi `store`
+
+        ```php
+        ...
+        public function store(Request $request)
+        {
+            $validatedData = request()->validate([
+                'title' => 'required|string|max:255',
+                'location' => 'required|string|max:255',
+                'salary' => 'required|numeric|min:5000',
+                'description' => 'required|string',
+                'experience' => 'required|in:' . implode(',', Job::$experience),
+                'category' => 'required|in:' . implode(',', Job::$category),
+            ]);
+
+            auth()->user()->employer->jobs()->create($validatedData);
+
+            return redirect()->route('my-jobs.index')
+                ->with('success', 'Job created successfully!');
+        }
+        ...
+        ```
+    - Refactor model `Job` dengan menambahkan `fillable`
+
+        ```php
+        ...
+        protected $fillable = [
+            'title',
+            'location',
+            'salary',
+            'description',
+            'experience',
+            'category',
+        ];
+        ...
+        ```
+    - Refactor `JobController` dengan menambahkan sort pada index
+
+        ```php
+        ...
+        public function index()
+        {
+            $filters = request()->only(['search', 'min_salary', 'max_salary', 'experience', 'category']);
+
+            return view('job.index', ['jobs' => Job::with('employer')->latest()->filter($filters)->get()]);
+        }
+        ...
+        ```
+    
       
