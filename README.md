@@ -666,3 +666,146 @@
         }
         ...
         ```
+
+## Filtering Jobs: Radio Button Filters
+- Pilih Salah Satu dari Beberapa
+    - Ubah `<div>3</div>` pada file `resources/views/job/index.blade.php` menjadi sebagai berikut
+
+        ```php
+        <div>
+            <div class="mb-1 font-semibold">Experience</div>
+
+            <label for="experience" class="mb-1 flex items-center">
+                <input type="radio" name="experience" value="" />
+                <span class="ml-2">All</span>
+            </label>
+        </div>
+        ```
+    - Tambahkan sisa radio button pada file `resources/views/job/index.blade.php` dengan content sebagai berikut
+
+        ```php
+        <label for="experience" class="mb-1 flex items-center">
+            <input type="radio" name="experience" value="junior" />
+            <span class="ml-2">Junior</span>
+        </label>
+        <label for="experience" class="mb-1 flex items-center">
+            <input type="radio" name="experience" value="middle" />
+            <span class="ml-2">Middle</span>
+        </label>
+        <label for="experience" class="mb-1 flex items-center">
+            <input type="radio" name="experience" value="senior" />
+            <span class="ml-2">Senior</span>
+        </label>
+        ```
+    - Refactor code pada `JobController` untuk mendukung fungsi filter
+
+        ```php
+        $jobs->when(request('search'), function ($query) {
+            $query->where(function ($query) {
+                $query->where('title', 'like', '%' . request('search') . '%')
+                    ->orWhere('description', 'like', '%' . request('search') . '%');
+            });
+        })->when(request('min_salary'), function ($query) {
+            $query->where('salary', '>=', request('min_salary'));
+        })->when(request('max_salary'), function ($query) {
+            $query->where('salary', '<=', request('max_salary'));
+        })->when(request('experience'), function ($query) {
+            $query->where('experience', request('experience'));
+        });
+        ```
+    - Handle checkbox pada `resources/views/job/index.blade.php` dengan menggunakan referensi https://laravel.com/docs/11.x/blade#authentication-directives, dan rubah code menjadi seperti berikut
+
+        ```php
+        <label for="experience" class="mb-1 flex items-center">
+            <input type="radio" name="experience" value=""
+                @checked(!request('experience'))/>
+            <span class="ml-2">All</span>
+        </label>
+
+        <label for="experience" class="mb-1 flex items-center">
+            <input type="radio" name="experience" value="entry"
+                @checked('entry' === request('experience'))/>
+            <span class="ml-2">Entry</span>
+        </label>
+
+        <label for="experience" class="mb-1 flex items-center">
+            <input type="radio" name="experience" value="intermediate"
+                @checked('intermediate' === request('experience'))/>
+            <span class="ml-2">Intermediate</span>
+        </label>
+
+        <label for="experience" class="mb-1 flex items-center">
+            <input type="radio" name="experience" value="senior"
+                @checked('senior' === request('experience'))/>
+            <span class="ml-2">Senior</span>
+        </label>
+        ```
+    - Buat component baru dengan nama `RadioGroup` dengan command berikut
+
+        ```bash
+        ./vendor/bin/sail artisan make:component RadioGroup
+        ```
+    - Refactor code pada `RadioGroup` class pada file `app/View/Components/RadioGroup.php` menjadi seperti berikut
+
+        ```php
+        public function __construct(
+            public string $name,
+            public array $options
+        )
+        {}
+        ```
+    - Copy code input pada file `resources/views/job/index.blade.php` ke dalam file `resources/views/components/radio-group.blade.php` dan ubah menjadi seperti berikut
+
+        ```php
+        <label for="experience" class="mb-1 flex items-center">
+            <input type="radio" name="experience" value=""
+                @checked(!request('experience'))/>
+            <span class="ml-2">All</span>
+        </label>
+
+        <label for="experience" class="mb-1 flex items-center">
+            <input type="radio" name="experience" value="entry"
+                @checked('entry' === request('experience'))/>
+            <span class="ml-2">Entry</span>
+        </label>
+        ```
+    - Refactor code pada file `resources/views/components/radio-group.blade.php` menjadi seperti berikut
+
+        ```php
+        <label for="{{ $name }}" class="mb-1 flex items-center">
+            <input type="radio" name="{{ $name }}" value=""
+                @checked(!request($name))/>
+            <span class="ml-2">All</span>
+        </label>
+
+        @foreach($options as $option)
+            <label for="{{ $name }}" class="mb-1 flex items-center">
+                <input type="radio" name="{{ $name }}" value="{{ $option }}"
+                    @checked($option === request($name))/>
+                <span class="ml-2">{{ $option }}</span>
+            </label>
+        @endforeach
+        ```
+    - Ubah code pada file `resources/views/job/index.blade.php` menjadi seperti berikut
+
+        ```php
+        <x-radio-group name="experience" :options="\App\Models\Job::$experience" />
+        ```
+    - Refactor code `<div>4</div>` pada file `resources/views/job/index.blade.php` menjadi sebagai berikut
+
+        ```php
+        <div>
+            <div class="mb-1 font-semibold">Category</div>
+            
+            <x-radio-group name="category" :options="\App\Models\Job::$category" />
+        </div>
+        ```
+    - Refactor code pada `JobController` untuk mendukung fungsi filter
+
+        ```php
+        ...
+        ->when(request('category'), function ($query) {
+            $query->where('category', request('category'));
+        })
+        ...
+        ```
